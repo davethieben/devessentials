@@ -4,6 +4,15 @@
         <TargetFramework>netstandard2.1</TargetFramework>
         <RootNamespace>Essentials</RootNamespace>
         <Nullable>enable</Nullable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Authors>Dave Thieben</Authors>
+        <Company>Thieben Consulting, LLC</Company>
+        <Description>Essential and common tools for developers.</Description>
+        <Copyright>2021 (c) Dave Thieben</Copyright>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageProjectUrl>https://github.com/davethieben/devessentials</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/davethieben/devessentials</RepositoryUrl>
+        <LangVersion>latest</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -13,6 +22,13 @@
       <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
       <PackageReference Include="Microsoft.Extensions.Primitives" Version="5.0.1" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="..\LICENSE">
+        <Pack>True</Pack>
+        <PackagePath></PackagePath>
+      </None>
     </ItemGroup>
 
 </Project>

@@ -48,12 +48,11 @@ namespace Essentials
         }
 
         [return: MaybeNull]
-        public static TValue TryGet<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
+        public static TValue? TryGet<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
             where TKey : notnull
         {
-            TValue value = default;
+            TValue? value = default;
             dictionary?.TryGetValue(key, out value);
-
             return value;
         }
 
