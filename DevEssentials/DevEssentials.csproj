@@ -6,13 +6,13 @@
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Authors>Dave Thieben</Authors>
-        <Company>Thieben Consulting, LLC</Company>
         <Description>Essential and common tools for developers.</Description>
         <Copyright>2021 (c) Dave Thieben</Copyright>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <PackageProjectUrl>https://github.com/davethieben/devessentials</PackageProjectUrl>
         <RepositoryUrl>https://github.com/davethieben/devessentials</RepositoryUrl>
         <LangVersion>latest</LangVersion>
+        <Version>0.0.2</Version>
     </PropertyGroup>
 
     <ItemGroup>

@@ -41,7 +41,7 @@ namespace Essentials.IO
         public static string? FindNearestWith(this DirectoryInfo directory, string searchPattern)
         {
             directory.IsRequired();
-            Contracts.Require(searchPattern, nameof(searchPattern));
+            Contract.Requires(searchPattern, nameof(searchPattern));
 
             // the caller may have sent in a file name
             if (File.Exists(directory.FullName))
@@ -63,7 +63,7 @@ namespace Essentials.IO
         public static string? FindNearestNamed(this DirectoryInfo directory, string name)
         {
             directory.IsRequired();
-            Contracts.Require(name, nameof(name));
+            Contract.Requires(name, nameof(name));
 
             var current = directory;
             while (current != null)

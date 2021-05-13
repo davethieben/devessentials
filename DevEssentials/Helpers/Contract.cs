@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Essentials
 {
-    public static class Contracts
+    public static class Contract
     {
         [return: NotNull]
-        public static T IsRequired<T>(this T input)
+        public static T IsRequired<T>(this T? input)
         {
             if (input == null)
                 throw new ContractException(typeof(T).FullName);
@@ -15,13 +16,35 @@ namespace Essentials
         }
 
         [return: NotNull]
-        public static string Require(string input, string paramName)
+        public static string Requires(string? input, string paramName)
         {
             if (string.IsNullOrEmpty(input))
                 throw new ContractException(paramName);
 
             return input;
         }
+
+        [return: NotNull]
+        public static int Requires(int? input, string paramName)
+        {
+            if (input == null || input == 0)
+                throw new ContractException(paramName);
+
+            return input.Value;
+        }
+
+        [return: NotNull]
+        public static IEnumerable<T> Requires<T>(IEnumerable<T>? input, string paramName)
+        {
+            if (input.IsNullOrEmpty())
+                throw new ContractException(paramName);
+
+            return input;
+        }
+
+
+
+
     }
 
     public class ContractException : ArgumentException

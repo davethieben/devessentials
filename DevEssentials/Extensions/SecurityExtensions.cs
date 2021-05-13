@@ -9,7 +9,7 @@ namespace Essentials
         public static void AddClaim(this ClaimsPrincipal principal, string claimType, string claimValue)
         {
             principal.IsRequired();
-            Contracts.Require(claimType, nameof(claimType));
+            Contract.Requires(claimType, nameof(claimType));
 
             if (principal.Identity is ClaimsIdentity identity)
                 identity.AddClaim(new Claim(claimType, claimValue));

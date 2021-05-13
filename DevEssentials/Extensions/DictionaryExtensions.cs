@@ -117,7 +117,7 @@ namespace Essentials
         public static T Get<T>(this IDictionary<string, object> dictionary)
         {
             dictionary.IsRequired();
-            string key = Contracts.Require(typeof(T).FullName, $"{typeof(T)} FullName");
+            string key = Contract.Requires(typeof(T).FullName, $"{typeof(T)} FullName");
 
             return dictionary.TryGetValue(key, out object? attempt) && attempt != null ? (T)attempt : default;
         }
@@ -126,7 +126,7 @@ namespace Essentials
         public static T Get<T>(this IDictionary<object, object> dictionary)
         {
             dictionary.IsRequired();
-            string key = Contracts.Require(typeof(T).FullName, $"{typeof(T)} FullName");
+            string key = Contract.Requires(typeof(T).FullName, $"{typeof(T)} FullName");
 
             return dictionary.TryGetValue(key, out object? attempt) && attempt != null ? (T)attempt : default;
         }
@@ -137,7 +137,7 @@ namespace Essentials
         public static void Set<T>(this IDictionary<string, object?> dictionary, T item)
         {
             dictionary.IsRequired();
-            string key = Contracts.Require(typeof(T).FullName, $"{typeof(T)} FullName");
+            string key = Contract.Requires(typeof(T).FullName, $"{typeof(T)} FullName");
 
             dictionary[key] = item;
         }
@@ -145,7 +145,7 @@ namespace Essentials
         public static void Set<T>(this IDictionary<object, object?> dictionary, T item)
         {
             dictionary.IsRequired();
-            string key = Contracts.Require(typeof(T).FullName, $"{typeof(T)} FullName");
+            string key = Contract.Requires(typeof(T).FullName, $"{typeof(T)} FullName");
 
             dictionary[key] = item;
         }
@@ -160,7 +160,7 @@ namespace Essentials
             if (item == null)
                 throw new ArgumentNullException(nameof(item));
 
-            string key = Contracts.Require(item.GetType().FullName, $"{item.GetType()} FullName");
+            string key = Contract.Requires(item.GetType().FullName, $"{item.GetType()} FullName");
             dictionary[key] = item;
         }
 

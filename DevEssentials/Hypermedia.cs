@@ -3,11 +3,17 @@ using System.Collections.Generic;
 
 namespace Essentials
 {
-    public class Hypermedia<T>
+    public class Hypermedia<T> : Hypermedia
         where T : class
     {
         public T? Model { get; set; }
+    }
+
+    public class Hypermedia
+    {
         public List<HypermediaLink> Links { get; set; } = new List<HypermediaLink>();
+        public List<KeyValuePair<string, string>> Errors { get; set; } = new List<KeyValuePair<string, string>>();
+
     }
 
     public class HypermediaLink
@@ -22,7 +28,5 @@ namespace Essentials
         public string? Name { get; set; }
 
     }
-
-
 
 }

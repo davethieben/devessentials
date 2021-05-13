@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Essentials.Helpers
 {
@@ -9,6 +10,20 @@ namespace Essentials.Helpers
         private readonly Action? _onDispose;
 
         public Disposable(Action? onDispose = null) => _onDispose = onDispose;
+
+        public Disposable(IEnumerable<IDisposable> disposables)
+        {
+            if (!disposables.IsNullOrEmpty())
+            {
+                _onDispose = () =>
+                {
+                    foreach (var disposable in disposables)
+                    {
+                        disposable?.Dispose();
+                    }
+                };
+            }
+        }
 
         public void Dispose() => _onDispose?.Invoke();
 

@@ -64,7 +64,7 @@ namespace Essentials
             if (string.IsNullOrEmpty(input))
                 return string.Empty;
 
-            Contracts.Require(target, nameof(target));
+            Contract.Requires(target, nameof(target));
 
             int index = input.IndexOf(target);
             if (index < 0)
@@ -78,7 +78,7 @@ namespace Essentials
             if (string.IsNullOrEmpty(input))
                 return string.Empty;
 
-            Contracts.Require(target, nameof(target));
+            Contract.Requires(target, nameof(target));
 
             int index = input.IndexOf(target);
             if (index < 0)
@@ -119,7 +119,7 @@ namespace Essentials
 
         public static bool ContainsIgnoreCase(this string? input, string test)
         {
-            Contracts.Require(test, nameof(test));
+            Contract.Requires(test, nameof(test));
 
             if (input == null)
                 return false;

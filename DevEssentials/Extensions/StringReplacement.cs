@@ -22,7 +22,7 @@ namespace Essentials
 
         public StringReplacement Add(string token, string? replacement)
         {
-            Contracts.Require(token, nameof(token));
+            Contract.Requires(token, nameof(token));
 
             Add(token, () => replacement);
             return this;
@@ -30,7 +30,7 @@ namespace Essentials
 
         public StringReplacement Add(string token, object? replacement)
         {
-            Contracts.Require(token, nameof(token));
+            Contract.Requires(token, nameof(token));
 
             Add(token, () => replacement);
             return this;
@@ -38,7 +38,7 @@ namespace Essentials
 
         public StringReplacement Add(string token, Func<object?> replacement)
         {
-            Contracts.Require(token, nameof(token));
+            Contract.Requires(token, nameof(token));
             replacement.IsRequired();
 
             if ((token.StartsWith("{") && !token.EndsWith("}")) || (!token.StartsWith("{") && token.EndsWith("}")))
