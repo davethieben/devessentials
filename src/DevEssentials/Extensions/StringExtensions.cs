@@ -11,14 +11,32 @@ namespace Essentials
 {
     public static class StringExtensions
     {
-        public static bool HasValue([NotNullWhen(true)] this string? target) =>
-            !string.IsNullOrEmpty(target);
+        public static bool HasValue(
+#if NETSTANDARD2_1
+            [NotNullWhen(true)] 
+#endif
+            this string? target)
+        {
+            return !string.IsNullOrEmpty(target);
+        }
 
-        public static bool IsNullOrEmpty([MaybeNullWhen(true)] this string? target) =>
-            string.IsNullOrEmpty(target);
+        public static bool IsNullOrEmpty(
+#if NETSTANDARD2_1
+            [MaybeNullWhen(true)] 
+#endif
+            this string? target)
+        {
+            return string.IsNullOrEmpty(target);
+        }
 
-        public static bool IsNullOrWhiteSpace([MaybeNullWhen(true)] this string? target) =>
-            string.IsNullOrWhiteSpace(target);
+        public static bool IsNullOrWhiteSpace(
+#if NETSTANDARD2_1
+            [MaybeNullWhen(true)] 
+#endif
+            this string? target)
+        {
+            return string.IsNullOrWhiteSpace(target);
+        }
 
         /// <summary>
         /// similar to string.Equals but case insensitive

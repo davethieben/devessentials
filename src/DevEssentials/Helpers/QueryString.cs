@@ -1,45 +1,58 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
+using System.Text.Encodings.Web;
 using Essentials.Helpers;
 
 namespace Essentials
 {
     public class QueryString
     {
-        private readonly Dictionary<string, List<string?>> _values = new Dictionary<string, List<string?>>();
-        private static readonly Func<string?, string> _encode = HttpUtility.UrlEncode;
+        private readonly Dictionary<string, List<string>> _values = new Dictionary<string, List<string>>();
+        private static readonly Func<string, string> _encode = UrlEncoder.Default.Encode;
 
         public QueryString(string? inputString = null)
         {
             if (!string.IsNullOrEmpty(inputString))
             {
-                var pairs = HttpUtility.ParseQueryString(inputString).ToDictionary();
+                if (inputString.Contains("?"))
+                    inputString = inputString.SubstringAfter("?");
+
+                string[] pairs = inputString.Split('&');
                 foreach (var pair in pairs)
                 {
-                    _values.GetOrAdd(pair.Key)
-                        .Add(pair.Value);
+                    string key, value;
+
+                    if (!pair.Contains("="))
+                    {
+                        key = pair;
+                        value = null;
+                    }
+                    else
+                    {
+                        key = pair.SubstringBefore("=");
+                        value = pair.SubstringAfter("=");
+                    }
+
+                    _values.GetOrAdd(key).Add(value);
                 }
             }
         }
 
         public QueryString(object? inputData, bool includeNullValues = false)
         {
-            _values = new Dictionary<string, List<string?>>(
-                    inputData.ToDictionary(includeNullValues)
-                        .Select(kvp => new KeyValuePair<string, List<string?>>(
-                            kvp.Key,
-                            value: ToList(kvp.Value)))
+            _values.AddRange(
+                inputData.ToDictionary(includeNullValues)
+                    .Select(kvp => new KeyValuePair<string, List<string>>(kvp.Key, value: ToList(kvp.Value)))
                 );
 
-            List<string?> ToList(object? input)
+            List<string> ToList(object? input)
             {
                 if (input != null || includeNullValues)
                 {
-                    return new List<string?> { input?.ToString() };
+                    return new List<string> { input?.ToString() ?? "" };
                 }
-                return new List<string?>();
+                return new List<string>();
             }
         }
 
@@ -76,7 +89,7 @@ namespace Essentials
             return (includeLeadingQuestion ? "?" : "") +
                 string.Join("&",
                     _values
-                        .SelectMany(kvp => kvp.Value.Select(str => KeyValuePair.Create(kvp.Key, str)))
+                        .SelectMany(kvp => kvp.Value.Select(str => new KeyValuePair<string, string>(kvp.Key, str)))
                         .Select(kvp => $"{_encode(kvp.Key)}={_encode(kvp.Value)}")
                 );
         }

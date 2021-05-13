@@ -67,14 +67,22 @@ namespace Essentials.Reflection
             memberInfo.SetMethod.Invoke(target, new object?[] { value });
         }
 
-        public static bool IsNullableType([NotNullWhen(true)] this Type? type)
+        public static bool IsNullableType(
+#if NETSTANDARD2_1
+            [NotNullWhen(true)] 
+#endif
+            this Type? type)
         {
             return type != null
                 && type.GetTypeInfo().IsGenericType
                 && type.GetGenericTypeDefinition().IsAssignableFrom(typeof(Nullable<>));
         }
 
-        public static bool IsNullableType([NotNullWhen(true)] this Type? type, out Type? inner)
+        public static bool IsNullableType(
+#if NETSTANDARD2_1
+            [NotNullWhen(true)] 
+#endif
+            this Type? type, out Type? inner)
         {
             if (type.IsNullableType())
             {
@@ -86,7 +94,11 @@ namespace Essentials.Reflection
             return false;
         }
 
-        public static bool IsNumber([NotNullWhen(true)] this Type? type)
+        public static bool IsNumber(
+#if NETSTANDARD2_1
+            [NotNullWhen(true)] 
+#endif
+            this Type? type)
         {
             return type != null
                 && (type.Is<short>()
@@ -97,21 +109,33 @@ namespace Essentials.Reflection
                 || type.Is<decimal>());
         }
 
-        public static bool IsCollection([NotNullWhen(true)] this Type? type)
+        public static bool IsCollection(
+#if NETSTANDARD2_1
+            [NotNullWhen(true)] 
+#endif
+            this Type? type)
         {
             if (type == null) return false;
             Type enumerableType = ExtractGenericInterface(type, typeof(IEnumerable<>));
             return enumerableType != null;
         }
 
-        public static bool IsDictionary([NotNullWhen(true)] this Type? type)
+        public static bool IsDictionary(
+#if NETSTANDARD2_1
+            [NotNullWhen(true)] 
+#endif
+            this Type? type)
         {
             if (type == null) return false;
             Type enumerableType = ExtractGenericInterface(type, typeof(IDictionary<,>));
             return enumerableType != null;
         }
 
-        public static bool IsSimple([NotNullWhen(true)] this Type? type)
+        public static bool IsSimple(
+#if NETSTANDARD2_1
+            [NotNullWhen(true)] 
+#endif
+            this Type? type)
         {
             if (type.IsNullableType(out Type? innerType) && innerType != null && innerType.IsSimple())
                 return true;

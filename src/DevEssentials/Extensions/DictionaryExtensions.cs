@@ -47,7 +47,9 @@ namespace Essentials
             return output;
         }
 
+#if NETSTANDARD2_1
         [return: MaybeNull]
+#endif
         public static TValue? TryGet<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
             where TKey : notnull
         {
@@ -95,7 +97,9 @@ namespace Essentials
         /// <summary>
         /// returns a new Dictionary[[TKey, TValue]] if the input is null
         /// </summary>
+#if NETSTANDARD2_1
         [return: NotNull]
+#endif
         public static IDictionary<TKey, TValue> EmptyIfNull<TKey, TValue>(this IDictionary<TKey, TValue>? dictionary)
             where TKey : notnull
         {
@@ -113,7 +117,9 @@ namespace Essentials
         /// <summary>
         /// retrieves an item from the dictionary with the key of typeof(T).FullName
         /// </summary>
+#if NETSTANDARD2_1
         [return: MaybeNull]
+#endif
         public static T Get<T>(this IDictionary<string, object> dictionary)
         {
             dictionary.IsRequired();
@@ -122,7 +128,9 @@ namespace Essentials
             return dictionary.TryGetValue(key, out object? attempt) && attempt != null ? (T)attempt : default;
         }
 
+#if NETSTANDARD2_1
         [return: MaybeNull]
+#endif
         public static T Get<T>(this IDictionary<object, object> dictionary)
         {
             dictionary.IsRequired();

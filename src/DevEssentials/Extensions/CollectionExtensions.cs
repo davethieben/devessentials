@@ -11,7 +11,11 @@ namespace Essentials
 {
     public static class CollectionExtensions
     {
-        public static bool IsNullOrEmpty<T>([NotNullWhen(false)] this IEnumerable<T>? list)
+        public static bool IsNullOrEmpty<T>(
+#if NETSTANDARD2_1
+            [NotNullWhen(false)] 
+#endif
+            this IEnumerable<T>? list)
         {
             return list == null || !list.Any();
         }
@@ -44,7 +48,9 @@ namespace Essentials
         /// <summary>
         /// returns a new List<T> if the input is null
         /// </summary>
+#if NETSTANDARD2_1
         [return: NotNull]
+#endif
         public static IEnumerable<T> EmptyIfNull<T>(this IEnumerable<T>? list)
         {
             if (list == null)
