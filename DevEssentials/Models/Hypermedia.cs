@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Essentials
+namespace Essentials.Models
 {
     public class Hypermedia<T> : Hypermedia
         where T : class
