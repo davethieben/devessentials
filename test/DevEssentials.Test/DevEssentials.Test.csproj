@@ -16,7 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\DevEssentials\DevEssentials.csproj" />
+      <ProjectReference Include="..\..\src\DevEssentials\DevEssentials.csproj" />
     </ItemGroup>
 
 </Project>
