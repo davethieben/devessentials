@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
@@ -12,24 +13,29 @@ namespace Essentials.Reflection
 {
     public static class ReflectionExtensions
     {
-        public static bool HasAttribute<T>(this ICustomAttributeProvider type)
+        public static bool HasAttribute<T>(this ICustomAttributeProvider? type)
         {
-            return !type.GetCustomAttributes(typeof(T), true).IsNullOrEmpty();
+            return type != null
+                && !type.GetCustomAttributes(typeof(T), true).IsNullOrEmpty();
         }
 
-        public static T? GetAttribute<T>(this ICustomAttributeProvider type)
+        public static T? GetAttribute<T>(this ICustomAttributeProvider? type)
             where T : Attribute
         {
-            return type.GetCustomAttributes(typeof(T), true)?.FirstOrDefault() as T;
+            return type?.GetCustomAttributes(typeof(T), true)?.FirstOrDefault() as T;
         }
 
-        public static bool Is<T>(this Type type)
+        public static bool Is<T>(this Type? type)
         {
-            return typeof(T).IsAssignableFrom(type);
+            return type != null
+                && typeof(T).IsAssignableFrom(type);
         }
 
         public static TResult GetProperty<T, TResult>(this T target, Expression<Func<T, TResult>> expr)
         {
+            target.IsRequired();
+            expr.IsRequired();
+
             var memberInfo = (PropertyInfo)((MemberExpression)expr.Body).Member;
             return (TResult)memberInfo.GetMethod.Invoke(target, null);
         }
@@ -54,40 +60,73 @@ namespace Essentials.Reflection
 
         public static void SetProperty<T, TResult>(this T target, Expression<Func<T, TResult>> expr, TResult value)
         {
+            target.IsRequired();
+            expr.IsRequired();
+
             var memberInfo = (PropertyInfo)((MemberExpression)expr.Body).Member;
             memberInfo.SetMethod.Invoke(target, new object?[] { value });
         }
 
-        public static bool IsNullableType(this Type type)
+        public static bool IsNullableType([NotNullWhen(true)] this Type? type)
         {
-            return type.GetTypeInfo().IsGenericType
+            return type != null
+                && type.GetTypeInfo().IsGenericType
                 && type.GetGenericTypeDefinition().IsAssignableFrom(typeof(Nullable<>));
         }
 
-        public static bool IsNumber(this Type type)
+        public static bool IsNullableType([NotNullWhen(true)] this Type? type, out Type? inner)
         {
-            return type.Is<short>()
+            if (type.IsNullableType())
+            {
+                inner = type.GetGenericArguments().Single();
+                return true;
+            }
+
+            inner = null;
+            return false;
+        }
+
+        public static bool IsNumber([NotNullWhen(true)] this Type? type)
+        {
+            return type != null
+                && (type.Is<short>()
                 || type.Is<int>()
                 || type.Is<long>()
                 || type.Is<float>()
                 || type.Is<double>()
-                || type.Is<decimal>();
+                || type.Is<decimal>());
         }
 
-        public static bool IsCollection(this Type type)
+        public static bool IsCollection([NotNullWhen(true)] this Type? type)
         {
+            if (type == null) return false;
             Type enumerableType = ExtractGenericInterface(type, typeof(IEnumerable<>));
             return enumerableType != null;
         }
 
-        public static bool IsDictionary(this Type type)
+        public static bool IsDictionary([NotNullWhen(true)] this Type? type)
         {
+            if (type == null) return false;
             Type enumerableType = ExtractGenericInterface(type, typeof(IDictionary<,>));
             return enumerableType != null;
         }
 
+        public static bool IsSimple([NotNullWhen(true)] this Type? type)
+        {
+            if (type.IsNullableType(out Type? innerType) && innerType != null && innerType.IsSimple())
+                return true;
+
+            return type != null 
+                && (type.IsPrimitive
+                || type.IsValueType
+                || type.Is<string>());
+        }
+
         private static Type ExtractGenericInterface(Type queryType, Type interfaceType)
         {
+            queryType.IsRequired();
+            interfaceType.IsRequired();
+
             bool matchesInterface(Type t) => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == interfaceType;
 
             if (matchesInterface(queryType))
@@ -99,7 +138,7 @@ namespace Essentials.Reflection
         /// <summary>
         /// merges two regular System.objects into a single dynamic object
         /// </summary>
-        public static dynamic Merge(this object item1, params object[] items)
+        public static dynamic Merge(this object? item1, params object?[] items)
         {
             var expando = new ExpandoObject();
 
@@ -119,7 +158,7 @@ namespace Essentials.Reflection
         /// <param name="target">first dictonary of values</param>
         /// <param name="source">second dictionary of values</param>
         /// <returns>new dictionary containing the merged result values</returns>
-        public static IDictionary<TKey, TValue> Merge<TKey, TValue>(this IDictionary<TKey, TValue> target, IDictionary<TKey, TValue> source)
+        public static IDictionary<TKey, TValue> Merge<TKey, TValue>(this IDictionary<TKey, TValue>? target, IDictionary<TKey, TValue>? source)
             where TKey : notnull
         {
             IEqualityComparer<TKey> comparer = EqualityComparer<TKey>.Default;
@@ -140,7 +179,7 @@ namespace Essentials.Reflection
             return output;
         }
 
-        public static dynamic ToObject(this IDictionary<string, string> dictionary)
+        public static dynamic ToObject(this IDictionary<string, string>? dictionary)
         {
             var expando = new ExpandoObject();
 
@@ -154,18 +193,18 @@ namespace Essentials.Reflection
         /// copies all elements of the target into the destination dictionary. if the target is a true object,
         /// it will copy all the public properties. if the target is a dictionary, does a dictionary copy.
         /// </summary>
-        public static void CopyToDictionary(this object target, IDictionary<string, object> destination)
+        public static void CopyToDictionary(this object? source, IDictionary<string, object> destination)
         {
-            if (target == null)
+            if (source == null)
                 return;
 
             if (destination == null)
-                throw new ArgumentNullException(nameof(destination));
+                throw new ContractException(nameof(destination));
 
-            if (target.GetType().IsDictionary() ||
-                typeof(IEnumerable<KeyValuePair<string, object>>).IsAssignableFrom(target.GetType()))
+            if (source.GetType().IsDictionary() ||
+                typeof(IEnumerable<KeyValuePair<string, object>>).IsAssignableFrom(source.GetType()))
             {
-                var dictionary = target as IEnumerable<KeyValuePair<string, object>>;
+                var dictionary = source as IEnumerable<KeyValuePair<string, object>>;
                 foreach (KeyValuePair<string, object> kvp in dictionary.EmptyIfNull())
                 {
                     if (kvp.Key.HasValue())
@@ -176,14 +215,14 @@ namespace Essentials.Reflection
             }
             else
             {
-                foreach (PropertyInfo property in target.GetType().GetProperties())
+                foreach (PropertyInfo property in source.GetType().GetProperties())
                 {
-                    destination[property.Name] = property.GetValue(target, null);
+                    destination[property.Name] = property.GetValue(source, null);
                 }
             }
         }
 
-        public static IDictionary<string, object> ToDictionary(this object target)
+        public static IDictionary<string, object> ToDictionary(this object? target)
         {
             IDictionary<string, object> destination = new Dictionary<string, object>();
             target.CopyToDictionary(destination);
@@ -194,7 +233,7 @@ namespace Essentials.Reflection
         /// copies all public properties from one object to another of the same type. similar to Clone 
         /// but with using an existing object.
         /// </summary>
-        public static void CopyTo<T>(this T source, T destination)
+        public static void CopyTo<T>(this T? source, T? destination)
             where T : class
         {
             if (source == null || destination == null)
@@ -208,14 +247,15 @@ namespace Essentials.Reflection
             }
         }
 
-        public static IEnumerable<Assembly> DistinctAssemblies(this IEnumerable<Assembly> assemblies) => assemblies.Distinct(AssemblyNameComparer.IgnoreCaseIgnoreVersions);
+        public static IEnumerable<Assembly>? DistinctAssemblies(this IEnumerable<Assembly>? assemblies) => assemblies?.Distinct(AssemblyNameComparer.IgnoreCaseIgnoreVersions);
 
-        public static IEnumerable<Assembly> Load(this IEnumerable<AssemblyName> assemblyNames) => assemblyNames.Select(name => Assembly.Load(name));
+        public static IEnumerable<Assembly>? Load(this IEnumerable<AssemblyName>? assemblyNames) => assemblyNames?.Select(name => Assembly.Load(name));
 
         public static string GetDisplayName(this Assembly assembly, bool includeTimestamp = false)
         {
-            string timestamp = includeTimestamp ? " - " + assembly.GetTimestamp()?.ToString() : "";
+            assembly.IsRequired();
 
+            string timestamp = includeTimestamp ? " - " + assembly.GetTimestamp()?.ToString() : "";
             return $"{assembly.GetName().Name} v{assembly.GetVersion()}{timestamp}";
         }
 
@@ -249,9 +289,11 @@ namespace Essentials.Reflection
             return version.ToString(fieldCount);
         }
 
-        public static Version RevisionInsensitive(this Version version)
+        public static Version RevisionInsensitive(this Version? version)
         {
-            return new Version(version.Major, version.Minor, version.Build);
+            return version != null 
+                ? new Version(version.Major, version.Minor, version.Build)
+                : new Version();
         }
 
         /// <summary>
@@ -259,15 +301,20 @@ namespace Essentials.Reflection
         /// when the implementing assembly's version may change after an app update
         /// </summary>
         public static string VersionInsensitiveAssemblyQualifiedName(this Type type)
-            => $"{type.FullName}, {type.GetTypeInfo().Assembly.GetName().Name}";
+        {
+            type.IsRequired();
+            return $"{type.FullName}, {type.GetTypeInfo().Assembly.GetName().Name}";
+        }
 
         public static string GetFullName(this MethodBase method)
         {
+            method.IsRequired();
+
             var parameters = method.GetParameters().Select(x => x.ParameterType.Name + " " + x.Name);
             return $"{method.DeclaringType?.FullName}.{method.Name}({string.Join(", ", parameters)})";
         }
 
-        public static string GetDisplayName(this Type type, bool includeNamespaces = true)
+        public static string GetDisplayName(this Type? type, bool includeNamespaces = true)
         {
             if (type == null)
                 return string.Empty;
@@ -284,6 +331,8 @@ namespace Essentials.Reflection
 
         public static void Load<T>(this Lazy<T> lazy)
         {
+            lazy.IsRequired();
+
             if (!lazy.IsValueCreated)
                 Task.Run(() => lazy.Value?.ToString())
                     .AndForget();

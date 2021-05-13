@@ -7,10 +7,10 @@ namespace Essentials
     public static class Contract
     {
         [return: NotNull]
-        public static T IsRequired<T>(this T? input)
+        public static T IsRequired<T>([NotNull] this T? input, string? paramName = null)
         {
             if (input == null)
-                throw new ContractException(typeof(T).FullName);
+                throw new ContractException(paramName ?? typeof(T).FullName);
 
             return input;
         }

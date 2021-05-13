@@ -127,6 +127,16 @@ namespace Essentials
             return input.IndexOf(test, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
+        public static string ToBase64Encoded(this string? text)
+        {
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(text ?? string.Empty));
+        }
+
+        public static string FromBase64Encoded(this string? encoded)
+        {
+            return Encoding.UTF8.GetString(Convert.FromBase64String(encoded ?? string.Empty));
+        }
+
     }
 
     public static class Strings

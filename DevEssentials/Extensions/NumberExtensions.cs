@@ -38,5 +38,31 @@ namespace Essentials
                 : new int[0];
         }
 
+        public static string ToNthString(this int number)
+        {
+            string suffix;
+            if (number % 100 == 11 || number % 100 == 12 || number % 100 == 13)
+            {
+                suffix = "th";
+            }
+            else if (number % 10 == 1)
+            {
+                suffix = "st";
+            }
+            else if (number % 10 == 2)
+            {
+                suffix = "nd";
+            }
+            else if (number % 10 == 3)
+            {
+                suffix = "rd";
+            }
+            else
+            {
+                suffix = "th";
+            }
+            return $"{number}{suffix}";
+        }
+
     }
 }

@@ -4,7 +4,7 @@ using System.Security.Claims;
 
 namespace Essentials
 {
-    public static class SecurityExtensions
+    public static class ClaimsExtensions
     {
         public static void AddClaim(this ClaimsPrincipal principal, string claimType, string claimValue)
         {

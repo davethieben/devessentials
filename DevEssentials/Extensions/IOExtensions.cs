@@ -26,11 +26,28 @@ namespace Essentials.IO
         {
             var output = new List<byte>();
             byte[] data = new byte[bufferSize];
-            int bytesRead = 0;
-
+            int bytesRead;
             do
             {
                 bytesRead = await stream.ReadAsync(data, 0, bufferSize);
+                output.AddRange(data.Take(bytesRead));
+            }
+            while (bytesRead > 0);
+
+            return output.ToArray();
+        }
+
+        /// <summary>
+        /// read all the bytes from the given stream into a buffer and return as an array.
+        /// </summary>
+        public static byte[] ReadAllBytes(this Stream stream, int bufferSize = 65536)
+        {
+            var output = new List<byte>();
+            byte[] data = new byte[bufferSize];
+            int bytesRead;
+            do
+            {
+                bytesRead = stream.Read(data, 0, bufferSize);
                 output.AddRange(data.Take(bytesRead));
             }
             while (bytesRead > 0);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
@@ -15,7 +16,7 @@ namespace Essentials
             return list == null || !list.Any();
         }
 
-        public static void AddRange<T>(this IList<T> list, IEnumerable<T>? target)
+        public static void AddRange<T>(this ICollection<T> list, IEnumerable<T>? target)
         {
             list.IsRequired();
 
@@ -31,14 +32,19 @@ namespace Essentials
         /// </summary>
         public static void Remove<T>(this ICollection<T> list, Predicate<T> test)
         {
+            test.IsRequired();
+
             foreach (var item in list.ToList())
                 if (test(item))
                     list.Remove(item);
         }
 
+        public static void RemoveEmpty(this ICollection<string> list) => list.Remove(string.IsNullOrWhiteSpace);
+
         /// <summary>
         /// returns a new List<T> if the input is null
         /// </summary>
+        [return: NotNull]
         public static IEnumerable<T> EmptyIfNull<T>(this IEnumerable<T>? list)
         {
             if (list == null)
@@ -50,36 +56,46 @@ namespace Essentials
         /// evaluates two lists and compares their contents to each other
         /// if any one of the items in the lists don't match, returns false
         /// if items are the same but are in different positions, returns false
-        /// if null at same position in both lists, that is okay
+        /// if null at same position in both lists, returns true
         /// </summary>
-        public static bool IsEqualTo<T>(this IEnumerable<T>? x, IEnumerable<T>? y)
+        public static bool IsEqualTo<T>(this IEnumerable<T>? first, IEnumerable<T>? second, IEqualityComparer<T>? comparer = null)
         {
-            if ((x == null && y != null) || (x != null && y == null))
+            if (first == null && second == null)
+                return true;
+
+            if ((first == null && second != null) || (first != null && second == null))
                 return false;
 
-            if (x != null && y != null)
+            if (first.Count() != second.Count())
+                return false;
+
+            for (int index = 0; index < first.Count(); index++)
             {
-                if (x.Count() != y.Count())
-                    return false;
+                T firstItem = first.ElementAt(index);
+                T secondItem = second.ElementAt(index);
 
-                for (int i = 0; i < x.Count(); i++)
+                if (firstItem == null && secondItem == null)
+                    continue;
+                else
                 {
-                    T xi = x.ElementAt(i);
-                    T yi = y.ElementAt(i);
-
-                    if (xi == null && yi == null)
-                        continue;
-
-                    if (xi != null && !xi.Equals(yi))
-                        return false;
+                    if (comparer != null)
+                    {
+                        return comparer.Equals(firstItem, secondItem);
+                    }
+                    else
+                    {
+                        if (firstItem != null && !firstItem.Equals(secondItem))
+                            return false;
+                    }
                 }
             }
 
             return true;
         }
 
-        public static bool IsEqualTo<T>(this IEnumerable<T>? x, params T[]? y) =>
-            IsEqualTo<T>(x, (IEnumerable<T>?)y);
+        public static bool IsEqualTo<T>(this IEnumerable<T>? x, params T[]? y) => IsEqualTo(x, (IEnumerable<T>?)y, comparer: null);
+
+        public static bool IsEqualTo<T>(this IEnumerable<T>? x, IEqualityComparer<T>? comparer, params T[]? y) => IsEqualTo(x, (IEnumerable<T>?)y, comparer);
 
         /// <summary>
         /// selects only the Distinct elements in the list by comparing values in the provided expression.
@@ -88,12 +104,10 @@ namespace Essentials
         /// <example>myList.Distinct(x => x.Id);</example>
         /// <param name="source">list to select elements from</param>
         /// <param name="keySelector">expression to select values from the elements to compare</param>
-        public static IEnumerable<T> Distinct<T>(this IEnumerable<T> source, Expression<Func<T, object>> keySelector)
+        public static IEnumerable<T> Distinct<T>(this IEnumerable<T> source, Func<T, object> keySelector)
             where T : class
         {
-            source.IsRequired();
-
-            return source.Distinct(new KeyComparer<T>(keySelector));
+            return source.IsRequired().Distinct(new KeyComparer<T>(keySelector));
         }
 
         /// <summary>
@@ -211,7 +225,7 @@ namespace Essentials
             return list.Any(t => second.Contains(t));
         }
 
-        public static void RemoveOutliers(IList<long> input, double percentile)
+        public static void RemoveOutliers(ICollection<long> input, double percentile)
         {
             if (percentile < 0 || percentile > 1)
                 throw new ArgumentOutOfRangeException("Percentile must be greater than 0 and less than 1");
@@ -301,38 +315,17 @@ namespace Essentials
                     yield return childEx;
         }
 
-    }
-
-    public class KeyComparer<T> : IEqualityComparer<T>
-        where T : class
-    {
-        private readonly Func<T, object> _keySelector;
-
-        public KeyComparer(Expression<Func<T, object>> keySelector)
+        public static IDictionary<string, string> ToDictionary(this NameValueCollection pairs)
         {
-            _keySelector = keySelector.IsRequired().Compile();
-        }
-
-        public bool Equals([AllowNull] T x, [AllowNull] T y)
-        {
-            if (x == null && y == null)
-                return true;
-
-            if (x == null || y == null)
-                return false;
-
-            var xKey = _keySelector(x);
-            var yKey = _keySelector(y);
-
-            return xKey?.Equals(yKey) == true;
-        }
-
-        public int GetHashCode([DisallowNull] T obj)
-        {
-            if (obj == null)
-                return 0;
-
-            return _keySelector(obj).GetHashCode();
+            var output = new Dictionary<string, string>();
+            if (pairs != null && pairs.Count > 0)
+            {
+                for (int index = 0; index < pairs.Count; index++)
+                {
+                    output[pairs.GetKey(index)] = pairs.Get(index);
+                }
+            }
+            return output;
         }
 
     }
