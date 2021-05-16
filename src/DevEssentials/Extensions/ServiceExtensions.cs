@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Essentials.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Essentials
@@ -58,7 +59,22 @@ namespace Essentials
             implType.IsRequired();
             return services.Any(sd => sd.ImplementationType == implType);
         }
+        
+        public static void AddSingletons(this IServiceCollection services, params object[] instances)
+        {
+            foreach (var instance in instances)
+            {
+                if (instance == null)
+                    throw new ArgumentNullException("Singleton instances cannot be null");
 
+                services.AddSingleton(instance.GetType(), instance);
+            }
+        }
+
+        public static void Remove<TService>(this IServiceCollection services)
+        {
+            services.Remove(descriptor => descriptor.ServiceType.Is<TService>());
+        }
 
     }
 
