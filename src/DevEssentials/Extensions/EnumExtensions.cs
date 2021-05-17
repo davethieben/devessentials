@@ -1,4 +1,7 @@
 ﻿using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
@@ -31,6 +34,20 @@ namespace Essentials
             // Get the enum field.
             FieldInfo field = type.GetField(value.ToString());
             return field?.GetCustomAttribute<TAttribute>();
+        }
+
+        public static string GetDescription<TEnum>(this TEnum value) where TEnum : struct, IComparable, IFormattable, IConvertible
+        {
+            var fi = value.GetType().GetField(value.ToString(CultureInfo.InvariantCulture));
+            var attributes = (DescriptionAttribute[])fi.GetCustomAttributes(typeof(DescriptionAttribute), false);
+            return (attributes.Length > 0) ? attributes[0].Description : value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        public static string GetDisplayName<TEnum>(this TEnum value) where TEnum : struct, IComparable, IFormattable, IConvertible
+        {
+            var fi = value.GetType().GetField(value.ToString(CultureInfo.InvariantCulture));
+            var attributes = (DisplayAttribute[])fi.GetCustomAttributes(typeof(DisplayAttribute), false);
+            return (attributes.Length > 0) ? attributes[0].GetName() : value.ToString(CultureInfo.InvariantCulture);
         }
 
     }
