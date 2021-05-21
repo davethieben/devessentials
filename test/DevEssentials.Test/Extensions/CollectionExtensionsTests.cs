@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Essentials;
 using Xunit;
 
-namespace DevEssentials.Test.Extensions
+namespace Essentials.Test.Extensions
 {
     public class CollectionExtensionsTests
     {

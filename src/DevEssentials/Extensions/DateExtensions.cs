@@ -6,21 +6,28 @@ namespace Essentials
 {
     public static class DateExtensions
     {
-        public static string? ToShortDateString(this DateTime? input) =>
-            input.HasValue ?
-                input.Value.ToString("d") :
-                null as string;
+        private static SortedList<double, Func<TimeSpan, string>> _relativeDescriptions = new SortedList<double, Func<TimeSpan, string>>();
 
-        public static bool HasPassed(this DateTimeOffset dateTime) => 
-            dateTime <= DateTimeOffset.UtcNow;
-
-        public static bool IsWithin(this DateTimeOffset dateTime, TimeSpan timeSpan) =>
-            (dateTime - timeSpan).HasPassed();
-
-        public static string RelativeDate(this DateTime input)
+        static DateExtensions()
         {
-            var relativeSpan = DateTime.UtcNow.Subtract(input);
-            var totalMinutes = relativeSpan.TotalMinutes;
+            _relativeDescriptions.Add(0.75, (relativeSpan) => "less than a minute");
+            _relativeDescriptions.Add(1.5, (relativeSpan) => "about a minute");
+            _relativeDescriptions.Add(45, (relativeSpan) => $"{Math.Round(relativeSpan.TotalMinutes)} minutes");
+            _relativeDescriptions.Add(90, (relativeSpan) => "about an hour");
+            _relativeDescriptions.Add(1440, (relativeSpan) => $"about {Math.Round(Math.Abs(relativeSpan.TotalHours))} hours"); // 60 * 24
+            _relativeDescriptions.Add(2880, (relativeSpan) => "a day"); // 60 * 48
+            _relativeDescriptions.Add(43200, (relativeSpan) => $"{Math.Floor(Math.Abs(relativeSpan.TotalDays))} days"); // 60 * 24 * 30
+            _relativeDescriptions.Add(86400, (relativeSpan) => "about a month"); // 60 * 24 * 60
+            _relativeDescriptions.Add(525600, (relativeSpan) => $"{Math.Floor(Math.Abs(relativeSpan.TotalDays / 30))} months"); // 60 * 24 * 365 
+            _relativeDescriptions.Add(1051200, (relativeSpan) => "about a year"); // 60 * 24 * 365 * 2
+            _relativeDescriptions.Add(double.MaxValue, (relativeSpan) => $"{Math.Floor(Math.Abs(relativeSpan.TotalDays / 365))} years");
+
+        }
+
+        public static string RelativeDate(this DateTimeOffset input)
+        {
+            TimeSpan relativeSpan = DateTimeOffset.UtcNow.Subtract(input);
+            double totalMinutes = relativeSpan.TotalMinutes;
             var suffix = " ago";
 
             if (totalMinutes < 0.0)
@@ -29,21 +36,19 @@ namespace Essentials
                 suffix = " from now";
             }
 
-            var aValue = new SortedList<double, Func<string>>();
-            aValue.Add(0.75, () => "less than a minute");
-            aValue.Add(1.5, () => "about a minute");
-            aValue.Add(45, () => $"{Math.Round(totalMinutes)} minutes");
-            aValue.Add(90, () => "about an hour");
-            aValue.Add(1440, () => $"about {Math.Round(Math.Abs(relativeSpan.TotalHours))} hours"); // 60 * 24
-            aValue.Add(2880, () => "a day"); // 60 * 48
-            aValue.Add(43200, () => $"{Math.Floor(Math.Abs(relativeSpan.TotalDays))} days"); // 60 * 24 * 30
-            aValue.Add(86400, () => "about a month"); // 60 * 24 * 60
-            aValue.Add(525600, () => $"{Math.Floor(Math.Abs(relativeSpan.TotalDays / 30))} months"); // 60 * 24 * 365 
-            aValue.Add(1051200, () => "about a year"); // 60 * 24 * 365 * 2
-            aValue.Add(double.MaxValue, () => $"{Math.Floor(Math.Abs(relativeSpan.TotalDays / 365))} years");
-         
-            return aValue.First(n => totalMinutes < n.Key).Value.Invoke() + suffix;
+            return _relativeDescriptions.First(n => totalMinutes < n.Key).Value.Invoke(relativeSpan) + suffix;
         }
+
+        public static string? ToShortDateString(this DateTime? input) =>
+            input.HasValue ?
+                input.Value.ToString("d") :
+                null as string;
+
+        public static bool HasPassed(this DateTimeOffset dateTime) =>
+            dateTime <= DateTimeOffset.UtcNow;
+
+        public static bool IsWithin(this DateTimeOffset dateTime, TimeSpan timeSpan) =>
+            (dateTime - timeSpan).HasPassed();
 
     }
 }
