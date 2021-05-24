@@ -3,6 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net5</TargetFramework>
         <RootNamespace>Essentials.Test</RootNamespace>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>

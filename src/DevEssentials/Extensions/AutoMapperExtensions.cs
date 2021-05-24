@@ -53,7 +53,7 @@ namespace AutoMapper
                 return this;
             }
 
-            public TDest To<TDest>(Action<TSource, TDest>? afterMap = null)
+            public TDest To<TDest>(Action<TSource, TDest?>? afterMap = null)
             {
                 return _mapper.Map<TSource, TDest>(_source,
                     options =>

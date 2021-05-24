@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json.Linq;
 
 namespace Essentials
@@ -53,6 +54,8 @@ namespace Essentials
         public static int ToInt(this string? target, int @default = 0) =>
             Int32.TryParse(target, out int attempt) ? attempt : @default;
 
+        public static int? ToInt(this StringValues strings) => ((string)strings).ToInt();
+
         public static long ToLong(this string? target, long @default = 0) =>
             Int64.TryParse(target, out long attempt) ? attempt : @default;
 
@@ -77,6 +80,9 @@ namespace Essentials
             return @default;
         }
 
+#if NETSTANDARD2_1
+        [return: NotNull]
+#endif
         public static string SubstringAfter(this string? input, string target)
         {
             if (string.IsNullOrEmpty(input))
@@ -91,6 +97,9 @@ namespace Essentials
             return input.Substring(index + target.Length);
         }
 
+#if NETSTANDARD2_1
+        [return: NotNull]
+#endif
         public static string SubstringBefore(this string? input, string target)
         {
             if (string.IsNullOrEmpty(input))
@@ -105,12 +114,36 @@ namespace Essentials
             return input.Substring(0, index);
         }
 
+#if NETSTANDARD2_1
+        [return: NotNull]
+#endif
         public static string SafeSubstring(this string? input, int desiredLength)
         {
             if (string.IsNullOrEmpty(input))
                 return string.Empty;
             else if (input.Length > desiredLength)
                 return input.Substring(0, desiredLength);
+            else
+                return input;
+        }
+
+#if NETSTANDARD2_1
+        [return: NotNull]
+#endif
+        public static string Left(this string? input, int desiredLength) => SafeSubstring(input, desiredLength);
+
+#if NETSTANDARD2_1
+        [return: NotNull]
+#endif
+        public static string Right(this string? input, int desiredLength)
+        {
+            if (string.IsNullOrEmpty(input))
+                return string.Empty;
+            else if (input.Length > desiredLength)
+            {
+                int start = input.Length - desiredLength;
+                return input.Substring(start, desiredLength);
+            }
             else
                 return input;
         }
@@ -145,15 +178,35 @@ namespace Essentials
             return input.IndexOf(test, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
+#if NETSTANDARD2_1
+        [return: NotNull]
+#endif
         public static string ToBase64Encoded(this string? text)
         {
             return Convert.ToBase64String(Encoding.UTF8.GetBytes(text ?? string.Empty));
         }
 
+#if NETSTANDARD2_1
+        [return: NotNull]
+#endif
         public static string FromBase64Encoded(this string? encoded)
         {
             return Encoding.UTF8.GetString(Convert.FromBase64String(encoded ?? string.Empty));
         }
+
+#if NETSTANDARD2_1
+        [return: NotNull]
+#endif
+        public static string ToUrlSafe(this string? input)
+        {
+            if (input == null)
+                return string.Empty;
+
+            var output = Regex.Replace(input.ToLower(), "[^a-z0-9]+", "-");
+
+            return output;
+        }
+
 
     }
 
