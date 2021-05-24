@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Essentials.Reflection;
 
 namespace Essentials
 {
@@ -39,15 +40,21 @@ namespace Essentials
         public static string GetDescription<TEnum>(this TEnum value) where TEnum : struct, IComparable, IFormattable, IConvertible
         {
             var fi = value.GetType().GetField(value.ToString(CultureInfo.InvariantCulture));
-            var attributes = (DescriptionAttribute[])fi.GetCustomAttributes(typeof(DescriptionAttribute), false);
-            return (attributes.Length > 0) ? attributes[0].Description : value.ToString(CultureInfo.InvariantCulture);
+            var attribute = fi.GetAttribute<DescriptionAttribute>();
+            if (attribute != null && attribute.Description is string description && description != null && !string.IsNullOrEmpty(description))
+                return description;
+
+            return value.ToString(CultureInfo.InvariantCulture);
         }
 
         public static string GetDisplayName<TEnum>(this TEnum value) where TEnum : struct, IComparable, IFormattable, IConvertible
         {
             var fi = value.GetType().GetField(value.ToString(CultureInfo.InvariantCulture));
-            var attributes = (DisplayAttribute[])fi.GetCustomAttributes(typeof(DisplayAttribute), false);
-            return (attributes.Length > 0) ? attributes[0].GetName() : value.ToString(CultureInfo.InvariantCulture);
+            var attribute = fi.GetAttribute<DisplayAttribute>();
+            if (attribute != null && attribute.GetName() is string name && name != null && !string.IsNullOrEmpty(name))
+                return name;
+
+            return value.ToString(CultureInfo.InvariantCulture);
         }
 
     }

@@ -26,7 +26,7 @@ namespace Essentials
 #endif
         public static string Requires(string? input, string paramName)
         {
-            if (string.IsNullOrEmpty(input))
+            if (input == null || string.IsNullOrEmpty(input))
                 throw new ContractException(paramName);
 
             return input;
@@ -48,7 +48,7 @@ namespace Essentials
 #endif
         public static IEnumerable<T> Requires<T>(IEnumerable<T>? input, string paramName)
         {
-            if (input.IsNullOrEmpty())
+            if (input == null || input.IsNullOrEmpty())
                 throw new ContractException(paramName);
 
             return input;

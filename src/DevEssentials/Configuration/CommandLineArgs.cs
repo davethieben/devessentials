@@ -33,7 +33,7 @@ namespace Essentials.Configuration
                         {
                             currentKey = currentArg.TrimStart('-');
 
-                            if (key.HasValue() && currentKey.HasValue())
+                            if (key != null && key.HasValue() && currentKey.HasValue())
                             {
                                 data.Add(key, null);
                             }
@@ -45,7 +45,7 @@ namespace Essentials.Configuration
                             value = currentArg;
                         }
 
-                        if (key.HasValue() && value.HasValue())
+                        if (key != null && key.HasValue() && value.HasValue())
                         {
                             data.Add(key, value);
 
@@ -56,7 +56,7 @@ namespace Essentials.Configuration
                     }
                 }
 
-                if (key.HasValue())
+                if (key != null && key.HasValue())
                     data.Add(key, null);
 
             }

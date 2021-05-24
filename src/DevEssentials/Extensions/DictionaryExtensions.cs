@@ -8,16 +8,30 @@ namespace Essentials
 {
     public static class DictionaryExtensions
     {
+
+#if NETSTANDARD2_1
+        [return: NotNull]
+#endif
         public static TValue GetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
             where TKey : notnull
             where TValue : new()
-            => dictionary.GetOrAdd(key, () => new TValue());
-
-        public static TValue GetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, Func<TValue> factory)
         {
             dictionary.IsRequired();
 
             if (!dictionary.TryGetValue(key, out TValue value))
+            {
+                value = new TValue();
+                dictionary[key] = value;
+            }
+
+            return value.IsRequired();
+        }
+
+        public static TValue? GetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue?> dictionary, TKey key, Func<TValue?> factory)
+        {
+            dictionary.IsRequired();
+
+            if (!dictionary.TryGetValue(key, out TValue? value))
             {
                 value = factory.IsRequired().Invoke();
                 dictionary[key] = value;
@@ -120,7 +134,7 @@ namespace Essentials
 #if NETSTANDARD2_1
         [return: MaybeNull]
 #endif
-        public static T Get<T>(this IDictionary<string, object> dictionary)
+        public static T? Get<T>(this IDictionary<string, object> dictionary)
         {
             dictionary.IsRequired();
             string key = Contract.Requires(typeof(T).FullName, $"{typeof(T)} FullName");
@@ -131,7 +145,7 @@ namespace Essentials
 #if NETSTANDARD2_1
         [return: MaybeNull]
 #endif
-        public static T Get<T>(this IDictionary<object, object> dictionary)
+        public static T? Get<T>(this IDictionary<object, object> dictionary)
         {
             dictionary.IsRequired();
             string key = Contract.Requires(typeof(T).FullName, $"{typeof(T)} FullName");

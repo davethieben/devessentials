@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Essentials
 {
@@ -27,7 +25,7 @@ namespace Essentials
             if (target.IsNullOrEmpty())
                 return;
 
-            foreach (T item in target)
+            foreach (T item in target.EmptyIfNull())
                 list.Add(item);
         }
 

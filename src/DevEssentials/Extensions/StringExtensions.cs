@@ -85,7 +85,7 @@ namespace Essentials
 #endif
         public static string SubstringAfter(this string? input, string target)
         {
-            if (string.IsNullOrEmpty(input))
+            if (input == null || string.IsNullOrEmpty(input))
                 return string.Empty;
 
             Contract.Requires(target, nameof(target));
@@ -102,7 +102,7 @@ namespace Essentials
 #endif
         public static string SubstringBefore(this string? input, string target)
         {
-            if (string.IsNullOrEmpty(input))
+            if (input == null || string.IsNullOrEmpty(input))
                 return string.Empty;
 
             Contract.Requires(target, nameof(target));
@@ -119,7 +119,7 @@ namespace Essentials
 #endif
         public static string SafeSubstring(this string? input, int desiredLength)
         {
-            if (string.IsNullOrEmpty(input))
+            if (input == null || string.IsNullOrEmpty(input))
                 return string.Empty;
             else if (input.Length > desiredLength)
                 return input.Substring(0, desiredLength);
@@ -137,7 +137,7 @@ namespace Essentials
 #endif
         public static string Right(this string? input, int desiredLength)
         {
-            if (string.IsNullOrEmpty(input))
+            if (input == null || string.IsNullOrEmpty(input))
                 return string.Empty;
             else if (input.Length > desiredLength)
             {
@@ -150,7 +150,7 @@ namespace Essentials
 
         public static string? NullSafeReplace(this string? input, string oldValue, string newValue)
         {
-            if (!string.IsNullOrEmpty(input))
+            if (input != null && !string.IsNullOrEmpty(input))
                 input = input.Replace(oldValue, newValue);
 
             return input;
@@ -158,7 +158,7 @@ namespace Essentials
 
         public static string? RemoveAll(this string? input, params char[] targets)
         {
-            if (!input.HasValue())
+            if (input == null || string.IsNullOrEmpty(input))
                 return input;
 
             string output = input;

@@ -84,7 +84,7 @@ namespace Essentials.Reflection
 #endif
             this Type? type, out Type? inner)
         {
-            if (type.IsNullableType())
+            if (type != null && type.IsNullableType())
             {
                 inner = type.GetGenericArguments().Single();
                 return true;
@@ -140,7 +140,7 @@ namespace Essentials.Reflection
             if (type.IsNullableType(out Type? innerType) && innerType != null && innerType.IsSimple())
                 return true;
 
-            return type != null 
+            return type != null
                 && (type.IsPrimitive
                 || type.IsValueType
                 || type.Is<string>());
@@ -315,7 +315,7 @@ namespace Essentials.Reflection
 
         public static Version RevisionInsensitive(this Version? version)
         {
-            return version != null 
+            return version != null
                 ? new Version(version.Major, version.Minor, version.Build)
                 : new Version();
         }

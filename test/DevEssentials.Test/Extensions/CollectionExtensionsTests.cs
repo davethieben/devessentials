@@ -22,7 +22,7 @@ namespace Essentials.Test.Extensions
         [Fact]
         public void IsNullOrEmpty_WhenNull()
         {
-            int[] collection = null;
+            int[]? collection = null;
             Assert.True(collection.IsNullOrEmpty());
         }
 
@@ -76,16 +76,16 @@ namespace Essentials.Test.Extensions
 
             Assert.Throws<ContractException>(() =>
             {
-                Predicate<TestDto> predicate = null;
+                Predicate<TestDto>? predicate = null;
 
-                list.Remove(predicate);
+                list.Remove(predicate!);
             });
         }
 
         [Fact]
         public void EmptyIfNull_WhenNull_ReturnsNonNull()
         {
-            IEnumerable<TestDto> list = null;
+            IEnumerable<TestDto>? list = null;
 
             var result = list.EmptyIfNull();
             Assert.NotNull(result);
@@ -127,8 +127,8 @@ namespace Essentials.Test.Extensions
         [Fact]
         public void IsEqualTo_WhenNull_ReturnsTrue()
         {
-            List<string> first = null;
-            List<string> second = null;
+            List<string>? first = null;
+            List<string>? second = null;
 
             Assert.True(first.IsEqualTo(second));
         }
@@ -157,7 +157,7 @@ namespace Essentials.Test.Extensions
                 "one", "two", "three"
             };
 
-            List<string> second = null;
+            List<string>? second = null;
 
             Assert.False(first.IsEqualTo(second));
         }
@@ -206,7 +206,7 @@ namespace Essentials.Test.Extensions
         private class TestDto
         {
             public int Id { get; set; }
-            public string Name { get; set; }
+            public string? Name { get; set; }
         }
 
         private class TestDtoComparer : KeyComparer<TestDto>

@@ -13,7 +13,7 @@ namespace Essentials
 
         public QueryString(string? inputString = null)
         {
-            if (!string.IsNullOrEmpty(inputString))
+            if (inputString != null && !string.IsNullOrEmpty(inputString))
             {
                 if (inputString.Contains("?"))
                     inputString = inputString.SubstringAfter("?");
@@ -21,7 +21,8 @@ namespace Essentials
                 string[] pairs = inputString.Split('&');
                 foreach (var pair in pairs)
                 {
-                    string key, value;
+                    string key;
+                    string? value;
 
                     if (!pair.Contains("="))
                     {
@@ -34,7 +35,9 @@ namespace Essentials
                         value = pair.SubstringAfter("=");
                     }
 
-                    _values.GetOrAdd(key).Add(value);
+                    var values = _values.GetOrAdd(key);
+                    if (value != null)
+                        values.Add(value);
                 }
             }
         }
@@ -64,7 +67,10 @@ namespace Essentials
 
         public QueryString Add(string key, string? value)
         {
-            _values.GetOrAdd(key).Add(value);
+            var values = _values.GetOrAdd(key);
+            if (value != null)
+                values.Add(value);
+
             return this;
         }
 
@@ -72,7 +78,10 @@ namespace Essentials
         {
             var values = _values.GetOrAdd(key);
             values.Clear();
-            values.Add(value);
+
+            if (value != null)
+                values.Add(value);
+
             return this;
         }
 
