@@ -44,19 +44,19 @@ namespace Essentials
                 && identity.HasClaim(c => c.Type.IsEquivalent(claimType));
         }
 
-        public static string? FindFirstValue(this ClaimsIdentity identity, string claimType)
+        public static string? GetClaimValue(this ClaimsIdentity identity, string claimType)
         {
             identity.IsRequired();
             return identity.FindFirst(claimType)?.Value;
         }
 
-        public static string? FindClaimValue(this ClaimsPrincipal principal, string claimType)
+        public static string? GetClaimValue(this ClaimsPrincipal principal, string claimType)
         {
             principal.IsRequired();
 
             foreach(ClaimsIdentity? identity in principal.Identities)
             {
-                string? value = identity?.FindFirstValue(claimType);
+                string? value = identity?.GetClaimValue(claimType);
                 if (!string.IsNullOrEmpty(value))
                     return value;
             }
