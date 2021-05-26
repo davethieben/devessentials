@@ -7,16 +7,25 @@ namespace Essentials.Helpers
     {
         private static readonly RNGCryptoServiceProvider _randomProvider = new RNGCryptoServiceProvider();
 
+        /// <summary>
+        /// returns a random integer between lower and upper
+        /// </summary>
         public static int GetInt32(int lower = 0, int upper = Int32.MaxValue)
         {
-            int value;
-            do
-            {
-                value = BitConverter.ToInt32(GetBytes(4), 0);
+            double seed = GetDouble();
+            int spread = upper - lower;
+            int value = (int)(seed * spread);
 
-            } while (value < lower || value > upper);
+            return lower + value;
+        }
 
-            return value;
+        /// <summary>
+        /// returns a random floating point value between 0.0 and 1.0
+        /// </summary>
+        public static double GetDouble()
+        {
+            int value = Math.Abs(BitConverter.ToInt32(GetBytes(4), 0));
+            return value / (double)Int32.MaxValue;
         }
 
         public static byte[] GetBytes(int length)
@@ -25,10 +34,9 @@ namespace Essentials.Helpers
                 throw new ArgumentOutOfRangeException(nameof(length));
 
             var byteArray = new byte[length];
-            _randomProvider.GetBytes(byteArray);
+            _randomProvider.GetNonZeroBytes(byteArray);
             return byteArray;
         }
-
 
     }
 }
