@@ -21,6 +21,12 @@ namespace Essentials
             return input;
         }
 
+        public static void Requires(bool test, string paramName)
+        {
+            if (!test)
+                throw new ContractException(paramName);
+        }
+
 #if NETSTANDARD2_1
         [return: NotNull]
 #endif
