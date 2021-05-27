@@ -132,7 +132,7 @@ namespace AutoMapper
                 return _expression.ForMember(destinationMember,
                     options =>
                     {
-                        options.MapFrom((source, dest, member, context) =>
+                        options.ResolveUsing((source, dest, member, context) =>
                         {
                             Expression<Func<TSource, object>> sourceExpression = _mapping.Invoke(context);
                             return sourceExpression.Compile().Invoke(source);
@@ -165,7 +165,7 @@ namespace AutoMapper
                 return _expression.ForMember(destinationMember,
                     options =>
                     {
-                        options.MapFrom((source, dest, member, context) =>
+                        options.ResolveUsing((source, dest, member, context) =>
                         {
                             Func<TSource, object> sourceExpression = _sourceMember.Invoke(context.Items);
                             return sourceExpression.Invoke(source);
@@ -190,7 +190,7 @@ namespace AutoMapper
             public void WithServices<TService1, TResult>(Func<TSource, TService1, TResult> resolver)
                 where TService1 : class
             {
-                _memberConfig.MapFrom((source, dest, member, context) =>
+                _memberConfig.ResolveUsing((source, dest, member, context) =>
                     {
                         context.IsRequired()
                             .Options.IsRequired();
@@ -205,7 +205,7 @@ namespace AutoMapper
                 where TService1 : class
                 where TService2 : class
             {
-                _memberConfig.MapFrom((source, dest, member, context) =>
+                _memberConfig.ResolveUsing((source, dest, member, context) =>
                     {
                         context.IsRequired()
                             .Options.IsRequired();
@@ -269,7 +269,7 @@ namespace AutoMapper
             var resolver = new CollectionResolver<TSourceParent, TDestinationParent, TSourceChild, TDestinationChild>(sourceKeySelector, destinationKeySelector, destinationFactory);
 
             return expression.ForMember(destinationCollection.ToUntypedPropertyExpression(),
-                config => config.MapFrom(resolver, sourceCollection.ToUntypedPropertyExpression()));
+                config => config.ResolveUsing(resolver, sourceCollection.ToUntypedPropertyExpression()));
         }
 
         private class CollectionResolver<TSourceParent, TDestinationParent, TSourceChild, TDestinationChild>
