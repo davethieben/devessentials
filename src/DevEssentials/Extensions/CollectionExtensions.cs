@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -331,6 +332,27 @@ namespace Essentials
             }
             return output;
         }
+
+        public static void AddValues(this ICollection<KeyValuePair<string, object>> list, object values)
+        {
+            if (values != null)
+            {
+                PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(values);
+                foreach (PropertyDescriptor item in properties)
+                {
+                    object value = item.GetValue(values);
+                    list.Add(new KeyValuePair<string, object>(item.Name, value));
+                }
+            }
+        }
+
+        public static IReadOnlyList<KeyValuePair<string, object>> CreateList(object values)
+        {
+            var list = new List<KeyValuePair<string, object>>();
+            list.AddValues(values);
+            return list.AsReadOnly();
+        }
+
 
     }
 }
