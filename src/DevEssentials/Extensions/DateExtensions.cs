@@ -24,6 +24,12 @@ namespace Essentials
 
         }
 
+        public static string ToString(this DateTime? input, string format) =>
+            input.HasValue ? input.Value.ToString(format) : string.Empty;
+
+        public static string ToString(this DateTimeOffset? input, string format) =>
+            input.HasValue ? input.Value.ToString(format) : string.Empty;
+
         public static string RelativeDate(this DateTime input) => RelativeDate(DateTime.UtcNow.Subtract(input));
 
         public static string RelativeDate(this DateTimeOffset input) => RelativeDate(DateTimeOffset.UtcNow.Subtract(input));
