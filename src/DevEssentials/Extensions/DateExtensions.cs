@@ -24,9 +24,12 @@ namespace Essentials
 
         }
 
-        public static string RelativeDate(this DateTimeOffset input)
+        public static string RelativeDate(this DateTime input) => RelativeDate(DateTime.UtcNow.Subtract(input));
+
+        public static string RelativeDate(this DateTimeOffset input) => RelativeDate(DateTimeOffset.UtcNow.Subtract(input));
+
+        public static string RelativeDate(this TimeSpan relativeSpan)
         {
-            TimeSpan relativeSpan = DateTimeOffset.UtcNow.Subtract(input);
             double totalMinutes = relativeSpan.TotalMinutes;
             var suffix = " ago";
 
