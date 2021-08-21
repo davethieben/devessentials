@@ -96,7 +96,7 @@ namespace AutoMapper
                 _sourceMember = sourceMember.IsRequired();
             }
 
-            public IMappingExpression<TSource, TDestination> To(Expression<Func<TDestination, object>> destinationMember)
+            public IMappingExpression<TSource, TDestination> To(Expression<Func<TDestination, object?>> destinationMember)
             {
                 return _expression.ForMember(destinationMember, options => options.MapFrom(_sourceMember));
             }
@@ -127,7 +127,7 @@ namespace AutoMapper
                 _mapping = mapping.IsRequired();
             }
 
-            public IMappingExpression<TSource, TDestination> To(Expression<Func<TDestination, object>> destinationMember)
+            public IMappingExpression<TSource, TDestination> To(Expression<Func<TDestination, object?>> destinationMember)
             {
                 return _expression.ForMember(destinationMember,
                     options =>
@@ -160,7 +160,7 @@ namespace AutoMapper
                 _sourceMember = sourceMember.IsRequired();
             }
 
-            public IMappingExpression<TSource, TDestination> To(Expression<Func<TDestination, object>> destinationMember)
+            public IMappingExpression<TSource, TDestination> To(Expression<Func<TDestination, object?>> destinationMember)
             {
                 return _expression.ForMember(destinationMember,
                     options =>
@@ -220,11 +220,10 @@ namespace AutoMapper
         }
 
         public static IMappingExpression<TSource, TDestination> Ignore<TSource, TDestination>(this IMappingExpression<TSource, TDestination> expression,
-            Expression<Func<TDestination, object>> member)
+            Expression<Func<TDestination, object?>> member)
         {
             return expression.ForMember(member, options => options.Ignore());
         }
-
 
         public static Expression<Func<TInput, object>> ToUntypedPropertyExpression<TInput, TOutput>(this Expression<Func<TInput, TOutput>> expression)
         {
