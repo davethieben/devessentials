@@ -10,50 +10,36 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection AddAttributeServices(this IServiceCollection services, params Assembly[] assembliesToScan)
         {
-            var assemblies = !assembliesToScan.IsNullOrEmpty() ? assembliesToScan.ToList() : new List<Assembly>();
-            assemblies.Add(typeof(ServiceAttribute).Assembly);
+            var assemblies = !assembliesToScan.IsNullOrEmpty() ? assembliesToScan.ToList() : new List<Assembly> { typeof(ServiceAttribute).Assembly };
 
-            var types = assemblies.SelectMany(asm => asm.GetTypesWith<ServiceAttribute>());
-            foreach (Type serviceType in types)
+            var contractTypes = assemblies.SelectMany(asm => asm.GetTypesWith<ServiceContractAttribute>());
+            foreach (Type serviceType in contractTypes)
             {
-                var serviceAttribute = serviceType.GetCustomAttribute<ServiceAttribute>();
-                if (serviceType.IsInterface)
-                {
-                    AddInterface(services, serviceType, assemblies);
-                }
-                else if (serviceType.IsClass)
-                {
-                    AddImplementation(services, serviceType);
-                }
-                else
-                {
-                    throw new InvalidOperationException($"Types with a [ServiceAttribute] must be a class or interface: {serviceType}");
-                }
+                if (!serviceType.IsInterface)
+                    throw new InvalidOperationException($"Types with a [ServiceContractAttribute] must be an interface: {serviceType}");
+
+                AddInterface(services, serviceType);
+            }
+
+            var serviceTypes = assemblies.SelectMany(asm => asm.GetTypesWith<ServiceAttribute>());
+            foreach (Type serviceType in serviceTypes)
+            {
+                if (!serviceType.IsClass)
+                    throw new InvalidOperationException($"Types with a [ServiceAttribute] must be a class: {serviceType}");
+
+                AddImplementation(services, serviceType);
             }
 
             return services;
         }
 
-        private static void AddInterface(IServiceCollection services, Type serviceType, IEnumerable<Assembly> sources)
+        private static void AddInterface(IServiceCollection services, Type serviceType)
         {
-            var serviceAttribute = serviceType.GetCustomAttribute<ServiceAttribute>();
-            if (serviceAttribute.ServiceType != null)
-            {
-                services.Add(ServiceDescriptor.Describe(serviceType, serviceAttribute.ServiceType, serviceAttribute.Lifetime));
-            }
-            else
-            {
-                var implementations = GetAllAssignable(serviceType);
-                foreach (var impl in implementations)
-                {
-                    services.Add(ServiceDescriptor.Describe(serviceType, impl, serviceAttribute.Lifetime));
-                }
-            }
+            var serviceAttribute = serviceType.GetCustomAttribute<ServiceContractAttribute>();
+            if (serviceAttribute.ServiceType == null)
+                throw new InvalidOperationException($"[ServiceContractAttribute] must have a ServiceType specified");
 
-            IEnumerable<Type> GetAllAssignable(Type target) =>
-                sources.SelectMany(assembly =>
-                    assembly.GetExportedTypes()
-                        .Where(t => target.IsAssignableFrom(t)));
+            services.Add(ServiceDescriptor.Describe(serviceType, serviceAttribute.ServiceType, serviceAttribute.Lifetime));
         }
 
         private static void AddImplementation(IServiceCollection services, Type serviceType)
@@ -66,13 +52,21 @@ namespace Microsoft.Extensions.DependencyInjection
             else
             {
                 var interfaces = serviceType.GetInterfaces();
-                foreach (var serviceInterface in interfaces)
+                if (interfaces.Any())
                 {
-                    services.Add(ServiceDescriptor.Describe(serviceInterface, serviceType, serviceAttribute.Lifetime));
+                    foreach (var serviceInterface in interfaces)
+                    {
+                        if (serviceInterface.IsDefined(typeof(DisallowAutomaticRegistrationAttribute)))
+                            continue;
+
+                        services.Add(ServiceDescriptor.Describe(serviceInterface, serviceType, serviceAttribute.Lifetime));
+                    }
+                }
+                else
+                {
+                    services.Add(ServiceDescriptor.Describe(serviceType, serviceType, serviceAttribute.Lifetime));
                 }
             }
-
-            services.AddSelf(serviceType, serviceAttribute.Lifetime);
         }
 
         public static IServiceCollection AddSelf<T>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
