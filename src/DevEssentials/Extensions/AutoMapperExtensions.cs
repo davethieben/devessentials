@@ -16,9 +16,9 @@ namespace AutoMapper
 
         public class MapExpression<TSource>
         {
-            private IMapper _mapper;
-            private TSource _source;
-            private IDictionary<string, object> _items;
+            private readonly IMapper _mapper;
+            private readonly TSource _source;
+            private readonly IDictionary<string, object> _items;
 
             public MapExpression(IMapper mapper, TSource source)
             {

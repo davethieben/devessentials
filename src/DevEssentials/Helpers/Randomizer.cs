@@ -10,7 +10,7 @@ namespace Essentials.Helpers
         /// <summary>
         /// returns a random integer between lower and upper
         /// </summary>
-        public static int GetInt32(int lower = 0, int upper = Int32.MaxValue)
+        public static int GetInt32(int lower = 0, int upper = int.MaxValue)
         {
             double seed = GetDouble();
             int spread = upper - lower;
@@ -25,7 +25,7 @@ namespace Essentials.Helpers
         public static double GetDouble()
         {
             int value = Math.Abs(BitConverter.ToInt32(GetBytes(4), 0));
-            return value / (double)Int32.MaxValue;
+            return value / (double)int.MaxValue;
         }
 
         public static byte[] GetBytes(int length)

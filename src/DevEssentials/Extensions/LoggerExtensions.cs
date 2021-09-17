@@ -12,7 +12,7 @@ namespace Essentials
 {
     public static class LoggerExtensions
     {
-        public static void LogDebugObject<T>(this ILogger logger, T? target, string? name = null, int depth = 10) => 
+        public static void LogDebugObject<T>(this ILogger logger, T? target, string? name = null, int depth = 10) =>
             logger.LogObject(LogLevel.Debug, target, name, depth);
 
         public static void LogObject<T>(this ILogger logger, LogLevel logLevel, T? target, string? name = null, int maxDepth = 10)
@@ -22,7 +22,7 @@ namespace Essentials
             if (logger.IsEnabled(logLevel))
             {
                 name = name ?? target?.GetType().FullName ?? typeof(T).FullName;
-                string json = JsonConvert.SerializeObject(target, Formatting.Indented, 
+                string json = JsonConvert.SerializeObject(target, Formatting.Indented,
                     new JsonSerializerSettings { MaxDepth = maxDepth, NullValueHandling = NullValueHandling.Ignore });
 
                 logger.Log(logLevel, name + Environment.NewLine + json);

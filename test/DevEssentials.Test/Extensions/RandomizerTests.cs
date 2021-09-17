@@ -1,5 +1,4 @@
-﻿using System;
-using Essentials.Helpers;
+﻿using Essentials.Helpers;
 using Xunit;
 
 namespace Essentials.Test.Extensions
@@ -23,7 +22,7 @@ namespace Essentials.Test.Extensions
             for (int run = 0; run < 100; run++)
             {
                 var random = Randomizer.GetInt32();
-                Assert.InRange(random, 0, Int32.MaxValue);
+                Assert.InRange(random, 0, int.MaxValue);
             }
         }
 

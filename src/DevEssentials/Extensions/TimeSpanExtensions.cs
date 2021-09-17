@@ -7,7 +7,7 @@ namespace Essentials.Time
     public static class TimeSpanExtensions
     {
         public static TimeSpan Seconds(this int input) => TimeSpan.FromSeconds(input);
-        
+
         public static TimeSpan Minutes(this int input) => TimeSpan.FromMinutes(input);
 
         public static TimeSpan Hours(this int input) => TimeSpan.FromHours(input);

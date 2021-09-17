@@ -10,7 +10,7 @@
 
         public AssemblyTimestampAttribute(string ticks)
         {
-            Timestamp = new DateTime(Int64.Parse(ticks));
+            Timestamp = new DateTime(long.Parse(ticks));
         }
 
         public DateTime Timestamp { get; }

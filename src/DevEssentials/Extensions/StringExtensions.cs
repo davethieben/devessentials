@@ -52,19 +52,19 @@ namespace Essentials
             !string.IsNullOrEmpty(x) && x.IndexOf(y, StringComparison.OrdinalIgnoreCase) >= 0;
 
         public static int ToInt(this string? target, int @default = 0) =>
-            Int32.TryParse(target, out int attempt) ? attempt : @default;
+            int.TryParse(target, out int attempt) ? attempt : @default;
 
         public static int? ToInt(this StringValues strings) => ((string)strings).ToInt();
 
         public static long ToLong(this string? target, long @default = 0) =>
-            Int64.TryParse(target, out long attempt) ? attempt : @default;
+            long.TryParse(target, out long attempt) ? attempt : @default;
 
         public static int? ToNullableInt(this string? target) =>
-            Int32.TryParse(target, out int attempt) ? attempt : (int?)null;
+            int.TryParse(target, out int attempt) ? attempt : null;
 
         public static bool ToBool(this string? target, bool @default = false)
         {
-            if (Boolean.TryParse(target, out bool attempt))
+            if (bool.TryParse(target, out bool attempt))
                 return attempt;
 
             int? attempt2 = target.ToNullableInt();
@@ -291,7 +291,7 @@ namespace Essentials
 
             return _urlKeyRemove.Replace(input, string.Empty);
         }
-        private static Regex _urlKeyRemove = new Regex(@"[^a-zA-Z0-9\-]+", RegexOptions.Compiled);
+        private static readonly Regex _urlKeyRemove = new Regex(@"[^a-zA-Z0-9\-]+", RegexOptions.Compiled);
 
         /// <summary>
         /// converts arbitrary strings of parts of a URL into one, well-formed URL

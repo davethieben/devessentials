@@ -6,7 +6,7 @@ namespace Essentials
 {
     public static class DateExtensions
     {
-        private static SortedList<double, Func<TimeSpan, string>> _relativeDescriptions = new SortedList<double, Func<TimeSpan, string>>();
+        private static readonly SortedList<double, Func<TimeSpan, string>> _relativeDescriptions = new SortedList<double, Func<TimeSpan, string>>();
 
         static DateExtensions()
         {
@@ -51,7 +51,7 @@ namespace Essentials
         public static string? ToShortDateString(this DateTime? input) =>
             input.HasValue ?
                 input.Value.ToString("d") :
-                null as string;
+                null;
 
         public static bool HasPassed(this DateTimeOffset dateTime) =>
             dateTime <= DateTimeOffset.UtcNow;

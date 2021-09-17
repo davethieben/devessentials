@@ -4,6 +4,8 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Essentials
@@ -98,9 +100,9 @@ namespace Essentials
             return true;
         }
 
-        public static bool IsEqualTo<T>(this IEnumerable<T>? x, params T[]? y) => IsEqualTo(x, (IEnumerable<T>?)y, comparer: null);
+        public static bool IsEqualTo<T>(this IEnumerable<T>? x, params T[]? y) => IsEqualTo(x, y, comparer: null);
 
-        public static bool IsEqualTo<T>(this IEnumerable<T>? x, IEqualityComparer<T>? comparer, params T[]? y) => IsEqualTo(x, (IEnumerable<T>?)y, comparer);
+        public static bool IsEqualTo<T>(this IEnumerable<T>? x, IEqualityComparer<T>? comparer, params T[]? y) => IsEqualTo(x, y, comparer);
 
         /// <summary>
         /// selects only the Distinct elements in the list by comparing values in the provided expression.
@@ -109,10 +111,11 @@ namespace Essentials
         /// <example>myList.Distinct(x => x.Id);</example>
         /// <param name="source">list to select elements from</param>
         /// <param name="keySelector">expression to select values from the elements to compare</param>
-        public static IEnumerable<T> Distinct<T>(this IEnumerable<T> source, Func<T, object> keySelector)
+        public static IEnumerable<T> Distinct<T, TResult>(this IEnumerable<T> source, Func<T, TResult> keySelector)
             where T : class
+            where TResult : IEquatable<TResult>
         {
-            return source.IsRequired().Distinct(new KeyComparer<T>(keySelector));
+            return source.IsRequired().Distinct(new KeyComparer<T, TResult>(keySelector));
         }
 
         /// <summary>
@@ -230,6 +233,59 @@ namespace Essentials
             return list.Any(t => second.Contains(t));
         }
 
+        public static bool ContainsEquivalent(this IEnumerable<string> input, string target)
+        {
+            return input != null && input.Any(str => target.IsEquivalent(str));
+        }
+
+        /// <summary>
+        /// compares 2 enumerables to see if they both contain the same number and equivalent elements, using a custom
+        /// selector to compare keys. returns false if any element is different. defaults to verifying the order is also
+        /// equivalent; pass `maintainOrder:false` to allow a different order of elements.
+        /// </summary>
+        public static bool ContainsEquivalent<T, TResult>(this IEnumerable<T> x, IEnumerable<T> y, Func<T, TResult> keySelector, bool maintainOrder = true)
+            where T : class
+            where TResult : IEquatable<TResult>
+        {
+            return ContainsEquivalent(x, y, new KeyComparer<T, TResult>(keySelector), maintainOrder);
+        }
+
+        /// <summary>
+        /// compares 2 enumerables to see if they both contain the same number and equivalent entities. returns false if any element is different. 
+        /// defaults to verifying the order is also equivalent; pass `maintainOrder:false` to allow a different order of elements.
+        /// </summary>
+        public static bool ContainsEquivalent<T>(this IEnumerable<T> x, IEnumerable<T> y, IEqualityComparer<T>? comparer = null, bool maintainOrder = true)
+        {
+            if (x == null || y == null)
+                throw new ArgumentNullException("collection is required");
+
+            if (ReferenceEquals(x, y))
+                return true;
+
+            if (x.Count() != y.Count())
+                return false;
+
+            comparer ??= EqualityComparer<T>.Default;
+
+            int xCount = x.Count();
+            for (int index = 0; index < xCount; index++)
+            {
+                if (maintainOrder)
+                {
+                    if (!comparer.Equals(x.ElementAt(index), y.ElementAt(index)))
+                        return false;
+                }
+                else
+                {
+                    var xVal = x.ElementAt(index);
+                    if (!y.Any(yVal => comparer.Equals(xVal, yVal)))
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
         public static void RemoveOutliers(ICollection<long> input, double percentile)
         {
             if (percentile < 0 || percentile > 1)
@@ -320,6 +376,10 @@ namespace Essentials
                     yield return childEx;
         }
 
+        /// <summary>
+        /// converts a <see cref="System.Collections.Specialized.NameValueCollection"/> into a 
+        /// <see cref="System.Collections.Generic.IDictionary{string,string}"/>
+        /// </summary>
         public static IDictionary<string, string> ToDictionary(this NameValueCollection pairs)
         {
             var output = new Dictionary<string, string>();
@@ -333,6 +393,10 @@ namespace Essentials
             return output;
         }
 
+        /// <summary>
+        /// adds the properties of a POCO as key/value pairs to the target collection. can also
+        /// be called on Dictionary{TKey, TValue}.
+        /// </summary>
         public static void AddValues(this ICollection<KeyValuePair<string, object>> list, object values)
         {
             if (values != null)
@@ -346,11 +410,83 @@ namespace Essentials
             }
         }
 
+        /// <summary>
+        /// converts a POCO into a list of key/value pairs
+        /// </summary>
         public static IReadOnlyList<KeyValuePair<string, object>> CreateList(object values)
         {
             var list = new List<KeyValuePair<string, object>>();
             list.AddValues(values);
             return list.AsReadOnly();
+        }
+
+        /// <summary>
+        /// helper method to combine possible duplicate elements in a list, and combine a children collection. useful when using
+        /// Dapper's "map" parameter to fetch child collections.
+        /// </summary>
+        /// <typeparam name="T">Type of the primary entity</typeparam>
+        /// <typeparam name="TKey">Type the primary entity uses as a Key (usually `int`)</typeparam>
+        /// <typeparam name="TChild">Type of the entities used in a child collection</typeparam>
+        /// <param name="list">target list that may contain duplicate entries</param>
+        /// <param name="groupingSelector">selector fn to fetch the key for the entity</param>
+        /// <param name="childSelector">selector fn to fetch the child collection to combine</param>
+        /// <returns>a normalized list of entities with no duplicates</returns>
+        public static List<T> GroupAndCollect<T, TKey, TChild>(this IEnumerable<T> list, Func<T, TKey> groupingSelector, Expression<Func<T, List<TChild>>> childSelector)
+        {
+            if (list == null) return new List<T>();
+
+            groupingSelector.IsRequired();
+            childSelector.IsRequired();
+
+            PropertyInfo childProperty = (PropertyInfo)((MemberExpression)childSelector.Body).Member;
+            return list.GroupBy(groupingSelector)
+                .Where(group => !group.IsNullOrEmpty())
+                .Select(group =>
+                {
+                    var single = group.First();
+                    var children = group.SelectMany(childSelector.Compile()).ToList();
+                    childProperty.SetValue(single, children);
+                    return single;
+                }).ToList();
+        }
+
+        public static IEnumerable<T>? Shuffle<T>(this IEnumerable<T>? list)
+        {
+            return list?.OrderBy(_ => Guid.NewGuid());
+        }
+
+        public static T? RandomOrDefault<T>(this IEnumerable<T> list)
+        {
+            return list != null ? list.Shuffle().FirstOrDefault() : default;
+        }
+
+        public static void ActOnDifferences<T>(this IEnumerable<T> originalList, IEnumerable<T> newList,
+            Action<T>? newAction = null,
+            Action<T, T>? updateAction = null,
+            Action<T>? deleteAction = null,
+            IEqualityComparer<T>? comparer = null)
+        {
+            comparer ??= EqualityComparer<T>.Default;
+            var toRemove = originalList.EmptyIfNull().ToList();
+
+            foreach (T newElement in newList.EmptyIfNull())
+            {
+                var originalElement = originalList.FirstOrDefault(x => comparer.Equals(x, newElement));
+                if (originalElement != null)
+                {
+                    toRemove.Remove(originalElement);
+                    updateAction?.Invoke(newElement, originalElement);
+                }
+                else // element is not in the original list
+                {
+                    newAction?.Invoke(newElement);
+                }
+            }
+
+            foreach (var deletedElement in toRemove)
+            {
+                deleteAction?.Invoke(deletedElement);
+            }
         }
 
 

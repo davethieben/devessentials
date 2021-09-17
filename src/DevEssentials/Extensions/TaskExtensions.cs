@@ -32,7 +32,7 @@ namespace Essentials
         /// <summary>
         /// removes a warning that this Task is not "await"ed
         /// </summary>
-        public static void AndForget(this Task task) => 
+        public static void AndForget(this Task task) =>
             task.IsRequired().ConfigureAwait(false);
 
     }

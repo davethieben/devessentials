@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace Essentials
@@ -28,7 +27,7 @@ namespace Essentials
             return null;
         }
 
-        public static string? Match(this string input, string pattern) => 
+        public static string? Match(this string input, string pattern) =>
             Regex.Match(input, pattern).GetGroupValue();
 
     }

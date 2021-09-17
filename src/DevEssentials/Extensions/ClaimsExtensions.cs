@@ -54,7 +54,7 @@ namespace Essentials
         {
             principal.IsRequired();
 
-            foreach(ClaimsIdentity? identity in principal.Identities)
+            foreach (ClaimsIdentity? identity in principal.Identities)
             {
                 string? value = identity?.GetClaimValue(claimType);
                 if (!string.IsNullOrEmpty(value))

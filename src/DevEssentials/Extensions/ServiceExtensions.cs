@@ -59,7 +59,7 @@ namespace Essentials
             implType.IsRequired();
             return services.Any(sd => sd.ImplementationType == implType);
         }
-        
+
         public static void AddSingletons(this IServiceCollection services, params object[] instances)
         {
             foreach (var instance in instances)

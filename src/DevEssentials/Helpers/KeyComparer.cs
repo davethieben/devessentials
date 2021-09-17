@@ -3,41 +3,32 @@ using System.Collections.Generic;
 
 namespace Essentials
 {
-    public class KeyComparer<T> : IEqualityComparer<T>
+    public class KeyComparer<T, TResult> : IEqualityComparer<T>
         where T : class
+        where TResult : IEquatable<TResult>
     {
-        public KeyComparer(Func<T, object> keySelector)
+        public KeyComparer(Func<T, TResult> keySelector)
         {
             Selector = keySelector.IsRequired();
         }
 
-        //public KeyComparer(Expression<Func<T, object>> keySelector)
-        //{
-        //    Selector = keySelector.IsRequired().Compile();
-        //}
-
-        public Func<T, object> Selector { get; set; }
+        public Func<T, TResult> Selector { get; set; }
 
         public bool Equals(T x, T y)
         {
-            if (x == null && y == null)
+            if ((x == null && y == null) || ReferenceEquals(x, y))
                 return true;
 
-            if (x != null && y != null)
-            {
-                var xKey = Selector(x);
-                var yKey = Selector(y);
+            if (x == null || y == null)
+                return false;
 
-                if (xKey == null && yKey == null)
-                    return true;
+            var xKey = Selector(x);
+            var yKey = Selector(y);
 
-                if (xKey != null && yKey != null)
-                {
-                    return xKey.Equals(yKey);
-                }
-            }
+            if ((xKey == null && yKey == null) || ReferenceEquals(xKey, yKey))
+                return true;
 
-            return false;
+            return xKey?.Equals(yKey) == true;
         }
 
         public int GetHashCode(T obj)

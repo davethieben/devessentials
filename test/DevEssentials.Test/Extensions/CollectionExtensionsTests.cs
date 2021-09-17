@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Essentials;
 using Xunit;
 
 namespace Essentials.Test.Extensions
@@ -209,7 +205,7 @@ namespace Essentials.Test.Extensions
             public string? Name { get; set; }
         }
 
-        private class TestDtoComparer : KeyComparer<TestDto>
+        private class TestDtoComparer : KeyComparer<TestDto, int>
         {
             public TestDtoComparer() : base(dto => dto.Id) { }
         }
