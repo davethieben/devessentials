@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Essentials.Helpers
+namespace Essentials
 {
     /// <summary>
     /// override of <see cref="UriBuilder"/> that doesn't include common web ports 80, 443 in output string

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Essentials.Helpers
+namespace Essentials
 {
     public class StopwatchBlock : IDisposable
     {

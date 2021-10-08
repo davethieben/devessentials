@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography;
 
-namespace Essentials.Helpers
+namespace Essentials
 {
     public static class Randomizer
     {

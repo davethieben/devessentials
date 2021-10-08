@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Essentials.Helpers
+namespace Essentials
 {
     public class Disposable : IDisposable
     {

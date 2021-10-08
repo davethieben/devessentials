@@ -2,7 +2,7 @@
 using System.IO;
 using System.Security.Cryptography;
 
-namespace Essentials.Helpers
+namespace Essentials
 {
     public interface IEncrypter
     {

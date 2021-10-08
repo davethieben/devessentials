@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Essentials.Helpers
+namespace Essentials
 {
     /// <summary>
     /// simple helper for Semaphores to allow a "using" block to ensure proper release,

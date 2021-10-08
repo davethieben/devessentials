@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
-using Essentials.Data;
 
-namespace Essentials.Helpers
+namespace Essentials.Data
 {
     public class RepositoryResolver<TModel> : IMemberValueResolver<object, object, int, TModel>
     {
