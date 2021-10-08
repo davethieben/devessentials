@@ -13,7 +13,7 @@ namespace Essentials
     public static class CollectionExtensions
     {
         public static bool IsNullOrEmpty<T>(
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
             [NotNullWhen(false)] 
 #endif
             this IEnumerable<T>? list)
@@ -35,8 +35,10 @@ namespace Essentials
         /// <summary>
         /// removes an element from the list based on a predicate delegate
         /// </summary>
-        public static void Remove<T>(this ICollection<T> list, Predicate<T> test)
+        public static void Remove<T>(this ICollection<T>? list, Predicate<T> test)
         {
+            if (list == null) return;
+
             test.IsRequired();
 
             foreach (var item in list.ToList())
@@ -44,19 +46,17 @@ namespace Essentials
                     list.Remove(item);
         }
 
-        public static void RemoveEmpty(this ICollection<string> list) => list.Remove(string.IsNullOrWhiteSpace);
+        public static void RemoveEmpty(this ICollection<string>? list) => list.Remove(string.IsNullOrWhiteSpace);
 
         /// <summary>
         /// returns a new List<T> if the input is null
         /// </summary>
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
         [return: NotNull]
 #endif
         public static IEnumerable<T> EmptyIfNull<T>(this IEnumerable<T>? list)
         {
-            if (list == null)
-                return new List<T>();
-            return list;
+            return list ?? new List<T>();
         }
 
         /// <summary>
@@ -106,23 +106,26 @@ namespace Essentials
 
         /// <summary>
         /// selects only the Distinct elements in the list by comparing values in the provided expression.
-        ///     <see cref="KeyComparer{T}"/>
+        ///     <see cref="KeyComparer{T, TResult}"/>
         /// </summary>
         /// <example>myList.Distinct(x => x.Id);</example>
         /// <param name="source">list to select elements from</param>
         /// <param name="keySelector">expression to select values from the elements to compare</param>
-        public static IEnumerable<T> Distinct<T, TResult>(this IEnumerable<T> source, Func<T, TResult> keySelector)
+        public static IEnumerable<T> Distinct<T, TResult>(this IEnumerable<T>? source, Func<T, TResult> keySelector)
             where T : class
             where TResult : IEquatable<TResult>
         {
-            return source.IsRequired().Distinct(new KeyComparer<T, TResult>(keySelector));
+            return source.EmptyIfNull().Distinct(new KeyComparer<T, TResult>(keySelector));
         }
 
         /// <summary>
-        /// inserts the given item into the list ONCE when the predicate is satisfied
+        /// inserts the given item into the list ONCE when the predicate is satisfied, only on the first match.
         /// </summary>
-        public static void InsertBefore<T>(this IList<T> list, Predicate<T> test, T item)
+        public static void InsertBefore<T>(this IList<T> list, Func<T, bool> test, T item)
         {
+            list.IsRequired();
+            test.IsRequired();
+
             for (int index = 0; index < list.Count; index++)
             {
                 if (test(list[index]))
@@ -133,9 +136,12 @@ namespace Essentials
             }
         }
 
-        public static T FindOne<T>(this IEnumerable<T> list, Func<T, bool> test)
+        /// <summary>
+        /// reducer similar to System.Linq.Enumerable.Single() but with better error messages
+        /// </summary>
+        public static T FindOne<T>(this IEnumerable<T>? list, Func<T, bool> test)
         {
-            var candidates = list.Where(test);
+            var candidates = list.EmptyIfNull().Where(test);
             if (candidates.IsNullOrEmpty())
                 throw new ArgumentException($"Cannot find matching '{typeof(T)}' in the list");
 
@@ -145,9 +151,9 @@ namespace Essentials
             return candidates.Single();
         }
 
-        public static T FindOne<T>(this IEnumerable<T> list) => list.FindOne(_ => true);
+        public static T FindOne<T>(this IEnumerable<T>? list) => list.FindOne(_ => true);
 
-        public static bool TryGetFirst<T>(this IEnumerable<T> list, Func<T, bool> test, out T? found)
+        public static bool TryGetFirst<T>(this IEnumerable<T>? list, Func<T, bool> test, out T? found)
             where T : class
         {
             found = default;
@@ -165,14 +171,16 @@ namespace Essentials
             return false;
         }
 
-        public static int IndexOf<T>(this IEnumerable<T> list, T item, int start = 0)
+        public static int IndexOf<T>(this IEnumerable<T>? list, Func<T?, bool> predicate, int start = 0)
         {
-            item.IsRequired();
+            predicate.IsRequired();
+
             if (!list.IsNullOrEmpty())
             {
-                for (int index = start; index < list.Count(); index++)
+                int count = list.Count();
+                for (int index = start; index < count; index++)
                 {
-                    if (list.ElementAt(index)?.Equals(item) == true)
+                    if (predicate.Invoke(list.ElementAt(index)))
                         return index;
                 }
             }
@@ -180,7 +188,15 @@ namespace Essentials
             return -1;
         }
 
-        public static int NullSafeCount<T>(this IEnumerable<T> list)
+        public static int IndexOf<T>(this IEnumerable<T>? list, T item, int start = 0)
+        {
+            item.IsRequired();
+
+            return list.IndexOf(x => x?.Equals(item) == true, start);
+        }
+
+
+        public static int NullSafeCount<T>(this IEnumerable<T>? list)
         {
             if (list.IsNullOrEmpty())
                 return 0;
@@ -200,12 +216,15 @@ namespace Essentials
         /// <param name="keySelector">function to select the key value from a given TSource object</param>
         /// <param name="merge">function to merge two TSource objects into one</param>
         /// <returns>new IEnumerable containing the merged output of the 2 input sources</returns>
-        public static IEnumerable<TSource> Merge<TSource, TKey>(this IEnumerable<TSource> first,
-            IEnumerable<TSource> second,
+        public static IEnumerable<TSource> Merge<TSource, TKey>(this IEnumerable<TSource>? first,
+            IEnumerable<TSource>? second,
             Func<TSource, TKey> keySelector,
             Func<TSource, TSource, TSource> merge)
             where TSource : class, new()
         {
+            keySelector.IsRequired();
+            merge.IsRequired();
+
             var groups = first.EmptyIfNull()
                           .Concat(second.EmptyIfNull())
                           .GroupBy(keySelector);
@@ -213,7 +232,7 @@ namespace Essentials
                 yield return group.Aggregate(new TSource(), merge);
         }
 
-        public static bool ContainsAll<T>(this IEnumerable<T> list, IEnumerable<T> second)
+        public static bool ContainsAll<T>(this IEnumerable<T>? list, IEnumerable<T>? second)
         {
             if (list.IsNullOrEmpty() && second.IsNullOrEmpty())
                 return true;
@@ -225,7 +244,7 @@ namespace Essentials
             return intersection.Count() == second.NullSafeCount();
         }
 
-        public static bool ContainsAny<T>(this IEnumerable<T> list, IEnumerable<T> second)
+        public static bool ContainsAny<T>(this IEnumerable<T>? list, IEnumerable<T>? second)
         {
             if (list.IsNullOrEmpty() || second.IsNullOrEmpty())
                 return false;
@@ -233,7 +252,7 @@ namespace Essentials
             return list.Any(t => second.Contains(t));
         }
 
-        public static bool ContainsEquivalent(this IEnumerable<string> input, string target)
+        public static bool ContainsEquivalent(this IEnumerable<string>? input, string? target)
         {
             return input != null && input.Any(str => target.IsEquivalent(str));
         }
@@ -243,7 +262,7 @@ namespace Essentials
         /// selector to compare keys. returns false if any element is different. defaults to verifying the order is also
         /// equivalent; pass `maintainOrder:false` to allow a different order of elements.
         /// </summary>
-        public static bool ContainsEquivalent<T, TResult>(this IEnumerable<T> x, IEnumerable<T> y, Func<T, TResult> keySelector, bool maintainOrder = true)
+        public static bool ContainsEquivalent<T, TResult>(this IEnumerable<T>? x, IEnumerable<T>? y, Func<T, TResult> keySelector, bool maintainOrder = true)
             where T : class
             where TResult : IEquatable<TResult>
         {
@@ -254,7 +273,7 @@ namespace Essentials
         /// compares 2 enumerables to see if they both contain the same number and equivalent entities. returns false if any element is different. 
         /// defaults to verifying the order is also equivalent; pass `maintainOrder:false` to allow a different order of elements.
         /// </summary>
-        public static bool ContainsEquivalent<T>(this IEnumerable<T> x, IEnumerable<T> y, IEqualityComparer<T>? comparer = null, bool maintainOrder = true)
+        public static bool ContainsEquivalent<T>(this IEnumerable<T>? x, IEnumerable<T>? y, IEqualityComparer<T>? comparer = null, bool maintainOrder = true)
         {
             if (x == null || y == null)
                 throw new ArgumentNullException("collection is required");
@@ -288,6 +307,8 @@ namespace Essentials
 
         public static void RemoveOutliers(ICollection<long> input, double percentile)
         {
+            input.IsRequired();
+
             if (percentile < 0 || percentile > 1)
                 throw new ArgumentOutOfRangeException("Percentile must be greater than 0 and less than 1");
 
@@ -302,15 +323,15 @@ namespace Essentials
             input.Remove(x => x < bottomThreshold || x > topThreshold);
         }
 
-        public static IEnumerable<string> ToStrings<T>(this IEnumerable<T> list)
+        public static IEnumerable<string> ToStrings<T>(this IEnumerable<T>? list)
         {
             foreach (T item in list.EmptyIfNull())
                 yield return item?.ToString() ?? "<null>";
         }
 
-        public static string ToDisplayString<T>(this IEnumerable<T> list, string separator = ",") => string.Join(separator, list.ToStrings());
+        public static string ToDisplayString<T>(this IEnumerable<T>? list, string separator = ",") => list != null ? string.Join(separator, list.ToStrings()) : string.Empty;
 
-        public static IEnumerable<T> Append<T>(this IEnumerable<T> input, T item)
+        public static IEnumerable<T> Append<T>(this IEnumerable<T>? input, T item)
         {
             if (input.IsNullOrEmpty())
             {
@@ -352,9 +373,10 @@ namespace Essentials
         /// <summary>
         /// given an object that has a child property of the same type, converts the hierarchy into a flat list
         /// </summary>
-        public static IEnumerable<T> Flatten<T>(this T start, Func<T, T?> getChild)
+        public static IEnumerable<T> Flatten<T>(this T? start, Func<T, T?> getChild)
             where T : class
         {
+            getChild.IsRequired();
             var output = new List<T>();
 
             if (start != null)
@@ -369,18 +391,19 @@ namespace Essentials
             return output;
         }
 
-        public static IEnumerable<Exception> FlattenAggregate(this AggregateException aggEx)
+        public static IEnumerable<Exception> FlattenAggregate(this AggregateException? aggEx)
         {
-            foreach (var ex in aggEx.InnerExceptions)
-                foreach (var childEx in ex.Flatten(x => x?.InnerException))
-                    yield return childEx;
+            if (aggEx != null)
+                foreach (var ex in aggEx.InnerExceptions)
+                    foreach (var childEx in ex.Flatten(x => x?.InnerException))
+                        yield return childEx;
         }
 
         /// <summary>
         /// converts a <see cref="System.Collections.Specialized.NameValueCollection"/> into a 
         /// <see cref="System.Collections.Generic.IDictionary{string,string}"/>
         /// </summary>
-        public static IDictionary<string, string> ToDictionary(this NameValueCollection pairs)
+        public static IDictionary<string, string> ToDictionary(this NameValueCollection? pairs)
         {
             var output = new Dictionary<string, string>();
             if (pairs != null && pairs.Count > 0)
@@ -397,8 +420,10 @@ namespace Essentials
         /// adds the properties of a POCO as key/value pairs to the target collection. can also
         /// be called on Dictionary{TKey, TValue}.
         /// </summary>
-        public static void AddValues(this ICollection<KeyValuePair<string, object>> list, object values)
+        public static void AddValues(this ICollection<KeyValuePair<string, object>> list, object? values)
         {
+            list.IsRequired();
+
             if (values != null)
             {
                 PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(values);
@@ -413,10 +438,11 @@ namespace Essentials
         /// <summary>
         /// converts a POCO into a list of key/value pairs
         /// </summary>
-        public static IReadOnlyList<KeyValuePair<string, object>> CreateList(object values)
+        public static IReadOnlyList<KeyValuePair<string, object>> CreateList(object? values)
         {
             var list = new List<KeyValuePair<string, object>>();
-            list.AddValues(values);
+            if (values != null)
+                list.AddValues(values);
             return list.AsReadOnly();
         }
 
@@ -431,7 +457,7 @@ namespace Essentials
         /// <param name="groupingSelector">selector fn to fetch the key for the entity</param>
         /// <param name="childSelector">selector fn to fetch the child collection to combine</param>
         /// <returns>a normalized list of entities with no duplicates</returns>
-        public static List<T> GroupAndCollect<T, TKey, TChild>(this IEnumerable<T> list, Func<T, TKey> groupingSelector, Expression<Func<T, List<TChild>>> childSelector)
+        public static List<T> GroupAndCollect<T, TKey, TChild>(this IEnumerable<T>? list, Func<T, TKey> groupingSelector, Expression<Func<T, List<TChild>>> childSelector)
         {
             if (list == null) return new List<T>();
 
@@ -455,12 +481,12 @@ namespace Essentials
             return list?.OrderBy(_ => Guid.NewGuid());
         }
 
-        public static T? RandomOrDefault<T>(this IEnumerable<T> list)
+        public static T? RandomOrDefault<T>(this IEnumerable<T>? list)
         {
             return list != null ? list.Shuffle().FirstOrDefault() : default;
         }
 
-        public static void ActOnDifferences<T>(this IEnumerable<T> originalList, IEnumerable<T> newList,
+        public static void ActOnDifferences<T>(this IEnumerable<T>? originalList, IEnumerable<T>? newList,
             Action<T>? newAction = null,
             Action<T, T>? updateAction = null,
             Action<T>? deleteAction = null,
@@ -503,8 +529,11 @@ namespace Essentials.Collections
         /// <param name="items">Collection to be sorted.</param>
         /// <param name="selector">Selector that returns the string to be sorted.</param>
         /// <param name="stringComparer">Optional string comparer.</param>
-        public static IOrderedEnumerable<T> OrderByNatural<T>(this IEnumerable<T> items, Func<T, string> selector, StringComparer? stringComparer = null)
+        public static IOrderedEnumerable<T> OrderByNatural<T>(this IEnumerable<T>? items, Func<T, string> selector, StringComparer? stringComparer = null)
         {
+            if (items == null) items = new T[0];
+            selector.IsRequired();
+
             var regex = new Regex(@"\d+", RegexOptions.Compiled);
 
             int maxDigits = items

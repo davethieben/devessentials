@@ -9,7 +9,7 @@ namespace Essentials
     public static class DictionaryExtensions
     {
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
         [return: NotNull]
 #endif
         public static TValue GetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
@@ -61,7 +61,7 @@ namespace Essentials
             return output;
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
         [return: MaybeNull]
 #endif
         public static TValue? TryGet<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
@@ -111,7 +111,7 @@ namespace Essentials
         /// <summary>
         /// returns a new Dictionary[[TKey, TValue]] if the input is null
         /// </summary>
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
         [return: NotNull]
 #endif
         public static IDictionary<TKey, TValue> EmptyIfNull<TKey, TValue>(this IDictionary<TKey, TValue>? dictionary)
@@ -131,7 +131,7 @@ namespace Essentials
         /// <summary>
         /// retrieves an item from the dictionary with the key of typeof(T).FullName
         /// </summary>
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
         [return: MaybeNull]
 #endif
         public static T? Get<T>(this IDictionary<string, object> dictionary)
@@ -142,7 +142,7 @@ namespace Essentials
             return dictionary.TryGetValue(key, out object? attempt) && attempt != null ? (T)attempt : default;
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
         [return: MaybeNull]
 #endif
         public static T? Get<T>(this IDictionary<object, object> dictionary)

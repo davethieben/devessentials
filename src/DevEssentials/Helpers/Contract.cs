@@ -6,11 +6,11 @@ namespace Essentials
 {
     public static class Contract
     {
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
         [return: NotNull]
 #endif
         public static T IsRequired<T>(
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
         [NotNull]
 #endif
             this T? input, string? paramName = null)
@@ -27,7 +27,7 @@ namespace Essentials
                 throw new ContractException(paramName);
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
         [return: NotNull]
 #endif
         public static string Requires(string? input, string paramName)
@@ -38,7 +38,7 @@ namespace Essentials
             return input;
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
         [return: NotNull]
 #endif
         public static int Requires(int? input, string paramName)
@@ -49,7 +49,7 @@ namespace Essentials
             return input.Value;
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
         [return: NotNull]
 #endif
         public static IEnumerable<T> Requires<T>(IEnumerable<T>? input, string paramName)

@@ -13,7 +13,7 @@ namespace Essentials
     public static class StringExtensions
     {
         public static bool HasValue(
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
             [NotNullWhen(true)] 
 #endif
             this string? target)
@@ -22,7 +22,7 @@ namespace Essentials
         }
 
         public static bool IsNullOrEmpty(
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
             [MaybeNullWhen(true)] 
 #endif
             this string? target)
@@ -31,7 +31,7 @@ namespace Essentials
         }
 
         public static bool IsNullOrWhiteSpace(
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
             [MaybeNullWhen(true)] 
 #endif
             this string? target)
@@ -80,7 +80,7 @@ namespace Essentials
             return @default;
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
         [return: NotNull]
 #endif
         public static string SubstringAfter(this string? input, string target)
@@ -97,7 +97,7 @@ namespace Essentials
             return input.Substring(index + target.Length);
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
         [return: NotNull]
 #endif
         public static string SubstringBefore(this string? input, string target)
@@ -114,7 +114,7 @@ namespace Essentials
             return input.Substring(0, index);
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
         [return: NotNull]
 #endif
         public static string SafeSubstring(this string? input, int desiredLength)
@@ -127,12 +127,12 @@ namespace Essentials
                 return input;
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
         [return: NotNull]
 #endif
         public static string Left(this string? input, int desiredLength) => SafeSubstring(input, desiredLength);
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
         [return: NotNull]
 #endif
         public static string Right(this string? input, int desiredLength)
@@ -178,7 +178,7 @@ namespace Essentials
             return input.IndexOf(test, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
         [return: NotNull]
 #endif
         public static string ToBase64Encoded(this string? text)
@@ -186,7 +186,7 @@ namespace Essentials
             return Convert.ToBase64String(Encoding.UTF8.GetBytes(text ?? string.Empty));
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
         [return: NotNull]
 #endif
         public static string FromBase64Encoded(this string? encoded)
@@ -194,7 +194,7 @@ namespace Essentials
             return Encoding.UTF8.GetString(Convert.FromBase64String(encoded ?? string.Empty));
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
         [return: NotNull]
 #endif
         public static string ToUrlSafe(this string? input)

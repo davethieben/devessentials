@@ -68,7 +68,7 @@ namespace Essentials.Reflection
         }
 
         public static bool IsNullableType(
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
             [NotNullWhen(true)] 
 #endif
             this Type? type)
@@ -79,7 +79,7 @@ namespace Essentials.Reflection
         }
 
         public static bool IsNullableType(
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
             [NotNullWhen(true)] 
 #endif
             this Type? type, out Type? inner)
@@ -95,7 +95,7 @@ namespace Essentials.Reflection
         }
 
         public static bool IsNumber(
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
             [NotNullWhen(true)] 
 #endif
             this Type? type)
@@ -110,7 +110,7 @@ namespace Essentials.Reflection
         }
 
         public static bool IsCollection(
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
             [NotNullWhen(true)] 
 #endif
             this Type? type)
@@ -121,7 +121,7 @@ namespace Essentials.Reflection
         }
 
         public static bool IsDictionary(
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
             [NotNullWhen(true)] 
 #endif
             this Type? type)
@@ -132,7 +132,7 @@ namespace Essentials.Reflection
         }
 
         public static bool IsSimple(
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
             [NotNullWhen(true)] 
 #endif
             this Type? type)
