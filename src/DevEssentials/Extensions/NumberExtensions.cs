@@ -64,5 +64,41 @@ namespace Essentials
             return $"{number}{suffix}";
         }
 
+        /// <summary>
+        /// allows calling `ToString` with a format on a nullable float, ex: `price.ToString("c")`
+        /// returns string.Empty is input is null.
+        /// </summary>
+        /// <param name="input">target nullable float</param>
+        /// <param name="format">format for ToString if input is not null</param>
+        /// <returns>formatted string</returns>
+        public static string ToString(this float? input, string format)
+        {
+            return (input.HasValue) ? input.Value.ToString(format) : string.Empty;
+        }
+
+        /// <summary>
+        /// allows calling `ToString` with a format on a nullable decimal, ex: `price.ToString("c")`
+        /// returns string.Empty is input is null.
+        /// </summary>
+        /// <param name="input">target nullable decimal</param>
+        /// <param name="format">format for ToString if input is not null</param>
+        /// <returns>formatted string</returns>
+        public static string ToString(this decimal? input, string format)
+        {
+            return (input.HasValue) ? input.Value.ToString(format) : string.Empty;
+        }
+        
+        /// <summary>
+        /// allows calling `ToString` with a format on a nullable double, ex: `price.ToString("c")`
+        /// returns string.Empty is input is null.
+        /// </summary>
+        /// <param name="input">target nullable double</param>
+        /// <param name="format">format for ToString if input is not null</param>
+        /// <returns>formatted string</returns>
+        public static string ToString(this double? input, string format)
+        {
+            return (input.HasValue) ? input.Value.ToString(format) : string.Empty;
+        }
+
     }
 }
