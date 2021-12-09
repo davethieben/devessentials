@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Threading.Tasks;
+using Essentials.Reflection;
 
 namespace Essentials
 {
@@ -40,25 +40,11 @@ namespace Essentials
             return value;
         }
 
-        public static IDictionary<string, object?> ToDictionary(this object? input, bool includeNullValues = true)
+        public static IDictionary<string, object?> ToDictionary(this object? target, bool includeNullValues = false)
         {
-            var output = new Dictionary<string, object?>();
-
-            if (input != null)
-            {
-                Type inputType = input.GetType().IsRequired();
-                var properties = inputType.GetProperties(System.Reflection.BindingFlags.Instance);
-                foreach (PropertyInfo property in properties)
-                {
-                    object? value = property.GetValue(input);
-                    if (value != null || includeNullValues)
-                    {
-                        output.Add(property.Name, value);
-                    }
-                }
-            }
-
-            return output;
+            IDictionary<string, object?> destination = new Dictionary<string, object?>();
+            target.CopyToDictionary(destination, includeNullValues);
+            return destination;
         }
 
 #if NETSTANDARD2_1_OR_GREATER

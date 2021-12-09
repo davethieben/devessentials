@@ -31,13 +31,23 @@ namespace Essentials.Reflection
                 && typeof(T).IsAssignableFrom(type);
         }
 
-        public static TResult GetProperty<T, TResult>(this T target, Expression<Func<T, TResult>> expr)
+        public static PropertyInfo? GetPropertyInfo<T, TResult>(this Expression<Func<T, TResult>> expression)
+        {
+            expression.IsRequired();
+
+            if (expression.Body is MemberExpression memberExpression)
+                return memberExpression.Member as PropertyInfo;
+            else
+                throw new InvalidOperationException("Expression must select a property");
+        }
+
+        public static TResult? GetProperty<T, TResult>(this T target, Expression<Func<T, TResult>> expression)
         {
             target.IsRequired();
-            expr.IsRequired();
+            expression.IsRequired();
 
-            var memberInfo = (PropertyInfo)((MemberExpression)expr.Body).Member;
-            return (TResult)memberInfo.GetMethod.Invoke(target, null);
+            var property = expression.GetPropertyInfo();
+            return (TResult?)(property?.GetMethod.Invoke(target, null) ?? default);
         }
 
         public static TResult GetPropertyValue<TResult>(this object target, string propertyName)
@@ -120,7 +130,7 @@ namespace Essentials.Reflection
             return enumerableType != null;
         }
 
-        public static bool IsDictionary(
+        public static bool IsAnyDictionary(
 #if NETSTANDARD2_1_OR_GREATER
             [NotNullWhen(true)] 
 #endif
@@ -128,6 +138,17 @@ namespace Essentials.Reflection
         {
             if (type == null) return false;
             Type enumerableType = ExtractGenericInterface(type, typeof(IDictionary<,>));
+            return enumerableType != null;
+        }
+
+        public static bool IsDictionary<TKey, TValue>(
+#if NETSTANDARD2_1_OR_GREATER
+            [NotNullWhen(true)] 
+#endif
+            this Type? type)
+        {
+            if (type == null) return false;
+            Type enumerableType = ExtractGenericInterface(type, typeof(IDictionary<TKey, TValue>));
             return enumerableType != null;
         }
 
@@ -217,7 +238,7 @@ namespace Essentials.Reflection
         /// copies all elements of the target into the destination dictionary. if the target is a true object,
         /// it will copy all the public properties. if the target is a dictionary, does a dictionary copy.
         /// </summary>
-        public static void CopyToDictionary(this object? source, IDictionary<string, object> destination)
+        public static void CopyToDictionary(this object? source, IDictionary<string, object?> destination, bool includeNullValues = true)
         {
             if (source == null)
                 return;
@@ -225,7 +246,7 @@ namespace Essentials.Reflection
             if (destination == null)
                 throw new ContractException(nameof(destination));
 
-            if (source.GetType().IsDictionary() ||
+            if (source.GetType().IsDictionary<string,object>() ||
                 typeof(IEnumerable<KeyValuePair<string, object>>).IsAssignableFrom(source.GetType()))
             {
                 var dictionary = source as IEnumerable<KeyValuePair<string, object>>;
@@ -233,7 +254,8 @@ namespace Essentials.Reflection
                 {
                     if (kvp.Key.HasValue())
                     {
-                        destination[kvp.Key] = kvp.Value;
+                        if (kvp.Value != null || includeNullValues)
+                            destination[kvp.Key] = kvp.Value;
                     }
                 }
             }
@@ -241,17 +263,13 @@ namespace Essentials.Reflection
             {
                 foreach (PropertyInfo property in source.GetType().GetProperties())
                 {
-                    destination[property.Name] = property.GetValue(source, null);
+                    object value = property.GetValue(source, null);
+                    if (value != null || includeNullValues)
+                        destination[property.Name] = value;
                 }
             }
         }
 
-        public static IDictionary<string, object> ToDictionary(this object? target)
-        {
-            IDictionary<string, object> destination = new Dictionary<string, object>();
-            target.CopyToDictionary(destination);
-            return destination;
-        }
 
         /// <summary>
         /// copies all public properties from one object to another of the same type. similar to Clone 
