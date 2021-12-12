@@ -5,8 +5,6 @@ namespace Essentials.Test.Helpers
 {
     public class Base36Tests
     {
-
-
         [Fact]
         public void Encode01()
         {
@@ -30,6 +28,7 @@ namespace Essentials.Test.Helpers
         }
 
         [Theory]
+        [InlineData("1")]
         [InlineData("a")]
         [InlineData("one1")]
         [InlineData("The Quick Brown Fox Jumped Over The Lazy Brown Dogs!@#$^&*?")]

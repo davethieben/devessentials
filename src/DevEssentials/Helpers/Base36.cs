@@ -34,10 +34,10 @@ namespace Essentials
         public static byte[] Decode(string input)
         {
             BigInteger product = new BigInteger(0);
-            foreach (char c in input)
+            for (int index = 0; index < input.Length; index++)
             {
-                int index = _alphabet.IndexOf(c);
-                product = BigInteger.Add(product, BigInteger.Multiply(index, 36));
+                int remainder = _alphabet.IndexOf(input[index]);
+                product = BigInteger.Add(remainder, BigInteger.Multiply(product, 36));
             }
             return product.ToByteArray();
         }
