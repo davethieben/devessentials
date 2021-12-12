@@ -486,36 +486,6 @@ namespace Essentials
             return list != null ? list.Shuffle().FirstOrDefault() : default;
         }
 
-        public static void ActOnDifferences<T>(this IEnumerable<T>? originalList, IEnumerable<T>? newList,
-            Action<T>? newAction = null,
-            Action<T, T>? updateAction = null,
-            Action<T>? deleteAction = null,
-            IEqualityComparer<T>? comparer = null)
-        {
-            comparer ??= EqualityComparer<T>.Default;
-            var toRemove = originalList.EmptyIfNull().ToList();
-
-            foreach (T newElement in newList.EmptyIfNull())
-            {
-                var originalElement = originalList.FirstOrDefault(x => comparer.Equals(x, newElement));
-                if (originalElement != null)
-                {
-                    toRemove.Remove(originalElement);
-                    updateAction?.Invoke(newElement, originalElement);
-                }
-                else // element is not in the original list
-                {
-                    newAction?.Invoke(newElement);
-                }
-            }
-
-            foreach (var deletedElement in toRemove)
-            {
-                deleteAction?.Invoke(deletedElement);
-            }
-        }
-
-
     }
 }
 

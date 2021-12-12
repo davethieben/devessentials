@@ -77,12 +77,14 @@ namespace DevEssentials.Testing
             var implMockType = mockType.MakeGenericType(serviceType);
             var mockConstruct = implMockType.GetConstructor(new Type[] { });
             var mock = mockConstruct.Invoke(null) as Mock;
+            if (mock == null)
+                throw new InvalidOperationException($"Cannot find constructor for '{implMockType.FullName}'");
 
             services.AddSingleton(implMockType, mock); // add Mock<TService>
             services.AddTransient(serviceType, sp => mock.Object); // add TService
 
             return services;
         }
-    
+
     }
 }
