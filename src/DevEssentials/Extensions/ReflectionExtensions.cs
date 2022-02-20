@@ -8,6 +8,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
+using Essentials.Helpers;
 
 namespace Essentials.Reflection
 {
@@ -246,11 +247,9 @@ namespace Essentials.Reflection
             if (destination == null)
                 throw new ContractException(nameof(destination));
 
-            if (source.GetType().IsDictionary<string,object>() ||
-                typeof(IEnumerable<KeyValuePair<string, object>>).IsAssignableFrom(source.GetType()))
+            if (source is IEnumerable<KeyValuePair<string, object>> dictionary && dictionary != null)
             {
-                var dictionary = source as IEnumerable<KeyValuePair<string, object>>;
-                foreach (KeyValuePair<string, object> kvp in dictionary.EmptyIfNull())
+                foreach (KeyValuePair<string, object> kvp in dictionary)
                 {
                     if (kvp.Key.HasValue())
                     {
@@ -261,15 +260,10 @@ namespace Essentials.Reflection
             }
             else
             {
-                foreach (PropertyInfo property in source.GetType().GetProperties())
-                {
-                    object value = property.GetValue(source, null);
-                    if (value != null || includeNullValues)
-                        destination[property.Name] = value;
-                }
+                var reader = new ObjectReader(source);
+                reader.CopyToDictionary(destination, includeNullValues);
             }
         }
-
 
         /// <summary>
         /// copies all public properties from one object to another of the same type. similar to Clone 
