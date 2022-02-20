@@ -226,5 +226,29 @@ namespace Essentials
             sublist.AddRange(values);
         }
 
+        public static IDictionary<TKey, TValue2> ChangeValueType<TKey, TValue1, TValue2>(this IEnumerable<KeyValuePair<TKey, TValue1>> input,
+            Func<TValue1, TValue2> converter)
+            where TKey : notnull
+        {
+            converter.IsRequired();
+
+            var output = new Dictionary<TKey, TValue2>();
+            foreach (var pair in input.EmptyIfNull())
+            {
+                output.Add(pair.Key, converter(pair.Value));
+            }
+            return output;
+        }
+
+        public static IDictionary<string, string?> ToStringDictionary(this IEnumerable<KeyValuePair<string, object?>> input)
+        {
+            return input.ChangeValueType((obj) => obj?.ToString());
+        }
+
+        public static IDictionary<string, object?> ToObjectDictionary(this IEnumerable<KeyValuePair<string, string?>> input)
+        {
+            return input.ChangeValueType((str) => (object?)str);
+        }
+
     }
 }
