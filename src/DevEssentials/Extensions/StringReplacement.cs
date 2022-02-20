@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Essentials
 {
@@ -8,14 +9,16 @@ namespace Essentials
     /// </summary>
     public class StringReplacement
     {
+        public const string TokenStart = "{";
+        public const string TokenEnd = "}";
+
         private readonly string _input;
-        private readonly IDictionary<string, Func<object?>> _tokens;
+        private readonly Dictionary<string, Func<object?>> _tokens = new Dictionary<string, Func<object?>>();
 
         public StringReplacement(string input, IDictionary<string, string>? tokens = null)
         {
             _input = input ?? string.Empty;
 
-            _tokens = new Dictionary<string, Func<object?>>();
             foreach (var kvp in tokens.EmptyIfNull())
                 Add(kvp.Key, kvp.Value);
         }
@@ -41,7 +44,7 @@ namespace Essentials
             Contract.Requires(token, nameof(token));
             replacement.IsRequired();
 
-            if ((token.StartsWith("{") && !token.EndsWith("}")) || (!token.StartsWith("{") && token.EndsWith("}")))
+            if ((token.StartsWith(TokenStart) && !token.EndsWith(TokenEnd)) || (!token.StartsWith(TokenStart) && token.EndsWith(TokenEnd)))
                 throw new ArgumentException($"Invalid token: '{token}'; Token must not have braces or start and end with braces '{{', '}}'");
 
             //if(!token.StartsWith("{"))
@@ -57,7 +60,7 @@ namespace Essentials
             foreach (string token in _tokens.Keys)
             {
                 object? value = _tokens[token]();
-                output = output.Replace(token, value != null ? value.ToString() : string.Empty);
+                output = output.Replace($"{TokenStart}{token}{TokenEnd}", value != null ? value.ToString() : string.Empty);
             }
 
             return output;
@@ -65,6 +68,8 @@ namespace Essentials
 
         public static implicit operator string(StringReplacement input) => input.ToString();
         public static implicit operator StringReplacement(string input) => new StringReplacement(input);
+
+        public static bool HasTokens(string input) => !string.IsNullOrEmpty(input) && input.Contains(TokenStart) && input.Contains(TokenEnd);
 
     }
 }
