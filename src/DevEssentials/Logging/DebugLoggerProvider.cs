@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Essentials.Reflection;
-using Microsoft.Extensions.DependencyInjection;
+using Essentials;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -100,62 +99,4 @@ namespace Essentials.Logging
                 !string.IsNullOrEmpty(input) && input.Contains(StringReplacement.TokenStart) && input.Contains(StringReplacement.TokenEnd);
         }
     }
-
-    public class DebugLoggerOptions
-    {
-        public DebugLoggerOptions()
-        {
-            OutputLayout = (message, _) => message;
-            Writer = message => Debug.WriteLine(message);
-        }
-
-        public List<Func<LogEntryState, bool>> LogFilters { get; } = new List<Func<LogEntryState, bool>>();
-
-        public Dictionary<Type, Func<object, LogEntryState, string>> TypeFormatters { get; } = new Dictionary<Type, Func<object, LogEntryState, string>>();
-
-        public Func<string, LogEntryState, string> OutputLayout { get; set; }
-
-        public Action<string> Writer { get; set; }
-
-
-        public DebugLoggerOptions AddFormatter<T>(Func<T, string> formatter)
-        {
-            TypeFormatters.Add(typeof(T), (value, state) => value is T t ? formatter(t) : string.Empty);
-            return this;
-        }
-
-        public DebugLoggerOptions AddFormatter<T>(Func<T, LogEntryState, string> formatter)
-        {
-            TypeFormatters.Add(typeof(T), (value, state) => value is T t ? formatter(t, state) : string.Empty);
-            return this;
-        }
-
-        public DebugLoggerOptions AddFilter(Func<LogEntryState, bool> filter)
-        {
-            LogFilters.Add(filter);
-            return this;
-        }
-
-        public bool FiltersAllow(LogEntryState state)
-        {
-            return LogFilters.IsNullOrEmpty()
-                || LogFilters.Any(f => f(state));
-        }
-
-    }
-
-    public static class DebugLoggerExtensions
-    {
-        public static ILoggingBuilder AddBetterDebug(this ILoggingBuilder builder, Action<DebugLoggerOptions>? setup = null)
-        {
-            builder.Services.Remove(sd => sd.ImplementationType == typeof(Microsoft.Extensions.Logging.Debug.DebugLoggerProvider));
-            builder.Services.AddSingleton<ILoggerProvider, DebugLoggerProvider>();
-
-            if (setup != null)
-                builder.Services.Configure<DebugLoggerOptions>(setup);
-
-            return builder;
-        }
-    }
-
 }
