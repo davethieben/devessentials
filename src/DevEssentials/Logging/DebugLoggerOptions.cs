@@ -28,7 +28,7 @@ namespace Essentials.Logging
 
         private static void DefaultWriter(string message)
         {
-            Debug.WriteLine(message);
+            System.Diagnostics.Debug.WriteLine(message);
         }
 
         public List<Func<LogEntryState, bool>> LogFilters { get; } = new List<Func<LogEntryState, bool>>();
