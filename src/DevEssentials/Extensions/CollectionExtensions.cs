@@ -195,7 +195,6 @@ namespace Essentials
             return list.IndexOf(x => x?.Equals(item) == true, start);
         }
 
-
         public static int NullSafeCount<T>(this IEnumerable<T>? list)
         {
             if (list.IsNullOrEmpty())
@@ -512,6 +511,8 @@ namespace Essentials.Collections
 
             return items.OrderBy(i => regex.Replace(selector(i), match => match.Value.PadLeft(maxDigits, '0')), stringComparer ?? StringComparer.CurrentCulture);
         }
+
+        public static IEnumerable<T> AsEnumerable<T>(this T? input) => input != null ? new T[] { input } : Array.Empty<T>();
 
     }
 }
