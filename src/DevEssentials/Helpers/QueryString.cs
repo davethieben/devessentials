@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Encodings.Web;
-using Essentials.Helpers;
+﻿using System.Net;
 
 namespace Essentials
 {
     public class QueryString
     {
         private readonly Dictionary<string, List<string>> _values = new Dictionary<string, List<string>>();
-        private static readonly Func<string, string> _encode = UrlEncoder.Default.Encode;
+        private static readonly Func<string, string> _encode = WebUtility.UrlEncode;
 
         public QueryString(string? inputString = null)
         {

@@ -1,42 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace Essentials.Models
+﻿namespace Essentials.Models
 {
     public interface IPagedList<T>
     {
         T[] Items { get; set; }
-        int TotalCount { get; }
         int Offset { get; }
         int PageSize { get; }
+        int TotalCount { get; }
 
         int PageNumber { get; }
+        int NumPages { get; }
         int StartItem { get; }
         int EndItem { get; }
+
     }
 
     public class PagedList<T> : IPagedList<T>
     {
-        public PagedList()
+        public static int DefaultPageSize = 100;
+
+        public PagedList(int? pageSize = null)
         {
             TotalCount = 0;
             Offset = 0;
-            PageSize = 20;
+            PageSize = pageSize ?? DefaultPageSize;
         }
 
-        public PagedList(IEnumerable<T> pageItems, int totalCount, int pageNumber = 1, int pageSize = 20)
+        public PagedList(IEnumerable<T> pageItems, int totalCount, int pageNumber = 1, int? pageSize = null)
         {
             Items = pageItems.ToArray();
             TotalCount = totalCount;
 
             if (pageNumber < 1)
                 pageNumber = 1;
-            Offset = (pageNumber - 1) * pageSize;
 
+            pageSize ??= DefaultPageSize;
             if (pageSize < 1)
                 pageSize = 1;
-            PageSize = pageSize;
+            PageSize = pageSize.Value;
+            Offset = (pageNumber - 1) * pageSize.Value;
         }
 
         public T[] Items { get; set; } = default!;

@@ -1,40 +1,39 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;netstandard2.1;net472</TargetFrameworks>
-        <RootNamespace>Essentials</RootNamespace>
-        <Nullable>enable</Nullable>
-        <GeneratePackageOnBuild Condition="$(Configuration)=='Release'">true</GeneratePackageOnBuild>
-        <PackageOutputPath>$(MSBuildThisFileDirectory)../../artifacts</PackageOutputPath>
-        <Authors>Dave Thieben</Authors>
-        <Description>Essential and common tools for developers.</Description>
-        <Copyright>2021 (c) Dave Thieben</Copyright>
-        <PackageLicenseFile>LICENSE</PackageLicenseFile>
-        <PackageProjectUrl>https://github.com/davethieben/devessentials</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/davethieben/devessentials</RepositoryUrl>
-        <LangVersion>latest</LangVersion>
-        <Version>1.0.13</Version>
-    </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;netstandard2.1;net472</TargetFrameworks>
+		<RootNamespace>Essentials</RootNamespace>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>true</ImplicitUsings>
+		<GeneratePackageOnBuild Condition="$(Configuration)=='Release'">true</GeneratePackageOnBuild>
+		<PackageOutputPath>$(MSBuildThisFileDirectory)../../artifacts</PackageOutputPath>
+		<Authors>Dave Thieben</Authors>
+		<Description>Essential and common tools for developers.</Description>
+		<Copyright>2022 (c) Dave Thieben</Copyright>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageProjectUrl>https://github.com/davethieben/devessentials</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/davethieben/devessentials</RepositoryUrl>
+		<LangVersion>latest</LangVersion>
+		<Version>1.0.13</Version>
+	</PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="AutoMapper" Version="6.1.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.1" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.1" />
-        <PackageReference Include="Microsoft.Extensions.Options" Version="2.1.1" />
-        <PackageReference Include="Microsoft.Extensions.Primitives" Version="2.1.1" />
-        <PackageReference Include="Newtonsoft.Json" Version="10.0.1" />
-        <PackageReference Include="System.ComponentModel.Annotations" Version="4.1.0" />
-        <PackageReference Include="System.IO.Compression" Version="4.1.0" />
-        <PackageReference Include="System.Text.Encodings.Web" Version="4.3.0" />
-    </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="AutoMapper" Version="6.1.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.1" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.1" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="2.1.1" />
+		<PackageReference Include="Microsoft.Extensions.Primitives" Version="2.1.1" />
+		<PackageReference Include="Newtonsoft.Json" Version="10.0.1" />
+		<PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+	</ItemGroup>
 
-    <ItemGroup>
-        <None Include="..\..\LICENSE">
-            <Pack>True</Pack>
-            <PackagePath></PackagePath>
-        </None>
-    </ItemGroup>
+	<ItemGroup>
+		<None Include="..\..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
 
 </Project>

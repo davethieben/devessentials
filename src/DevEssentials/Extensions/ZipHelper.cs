@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using System.IO.Compression;
-using System.Threading.Tasks;
+﻿using System.IO.Compression;
 
 namespace Essentials
 {
@@ -33,6 +30,7 @@ namespace Essentials
             return IsPkZipCompressedData(data);
         }
 
+#if NETSTANDARD2_0_OR_GREATER
         public static Task ExtractToFileAsync(this ZipArchiveEntry source, string destinationFileName, bool overwrite)
         {
             return Task.Run(() =>
@@ -40,6 +38,7 @@ namespace Essentials
                 source.ExtractToFile(destinationFileName, overwrite);
             });
         }
+#endif
 
     }
 }
