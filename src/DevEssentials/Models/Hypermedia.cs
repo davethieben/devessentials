@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Essentials.Models
+﻿namespace Essentials.Models
 {
     public class Hypermedia<T> : Hypermedia
         where T : class
@@ -12,7 +9,7 @@ namespace Essentials.Models
         }
 
         public T? Model { get; set; }
-    
+
         public new Hypermedia<T> AddLink(string name, string url, string method = "GET", string? rel = null)
         {
             Links.Add(name, new HypermediaLink(url, rel, method));
@@ -22,8 +19,8 @@ namespace Essentials.Models
 
     public class Hypermedia
     {
-        public Dictionary<string, HypermediaLink> Links { get; set; } = new Dictionary<string, HypermediaLink>();
-        public List<KeyValuePair<string, string>> Errors { get; set; } = new List<KeyValuePair<string, string>>();
+        public Dictionary<string, HypermediaLink> Links { get; set; } = new();
+        public Dictionary<string, string> Errors { get; set; } = new();
 
         public Hypermedia AddLink(string name, string url, string method = "GET", string? rel = null)
         {
@@ -32,20 +29,8 @@ namespace Essentials.Models
         }
     }
 
-    public class HypermediaLink
+    public record HypermediaLink(string Href, string? Rel = null, string Method = "GET", string? Type = null)
     {
-        public HypermediaLink(string href, string? rel = null, string? method = null, string? type = null)
-        {
-            Href = href;
-            Rel = rel;
-            if (method != null)
-                Method = method;
-        }
-
-        public string Href { get; set; } = default!;
-        public string? Rel { get; set; }
-        public string Method { get; set; } = "GET";
-        public string? Type { get; set; }
     }
 
     [AttributeUsage(AttributeTargets.Method)]
@@ -55,4 +40,9 @@ namespace Essentials.Models
 
     }
 
+}
+
+namespace System.Runtime.CompilerServices
+{
+    public struct IsExternalInit { }
 }
