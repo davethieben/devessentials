@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using Essentials.Reflection;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace Essentials
 {
@@ -48,7 +45,8 @@ namespace Essentials
                 return false;
 
             serviceType.IsRequired();
-            return services.Any(sd => sd.ServiceType == serviceType);
+            return services.Any(sd => sd.ServiceType == serviceType)
+                || (serviceType.IsGenericType && services.Any(sd => sd.ServiceType == serviceType.GetGenericTypeDefinition()));
         }
 
         public static bool ContainsImplementation(this IServiceCollection services, Type implType)
@@ -71,9 +69,19 @@ namespace Essentials
             }
         }
 
-        public static void Remove<TService>(this IServiceCollection services)
+        public static void Remove<TService>(this IServiceCollection services) => services.RemoveService(typeof(TService));
+
+        public static void RemoveService(this IServiceCollection services, Type serviceType)
         {
-            services.Remove(descriptor => descriptor.ServiceType.Is<TService>());
+            services.IsRequired();
+            serviceType.IsRequired();
+
+            var descriptors = services.Where(sd => sd.ServiceType == serviceType).ToArray();
+            if (!descriptors.IsNullOrEmpty())
+            {
+                foreach (var descriptor in descriptors)
+                    services.Remove(descriptor);
+            }
         }
 
     }

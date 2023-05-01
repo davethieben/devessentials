@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
-using System.IO;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading.Tasks;
 using Essentials.Helpers;
 
 namespace Essentials.Reflection
@@ -85,8 +81,8 @@ namespace Essentials.Reflection
             this Type? type)
         {
             return type != null
-                && type.GetTypeInfo().IsGenericType
-                && type.GetGenericTypeDefinition().IsAssignableFrom(typeof(Nullable<>));
+                && type.IsConstructedGenericType
+                && typeof(Nullable<>).IsAssignableFrom(type.GetGenericTypeDefinition());
         }
 
         public static bool IsNullableType(
@@ -95,6 +91,12 @@ namespace Essentials.Reflection
 #endif
             this Type? type, out Type? inner)
         {
+            if (typeof(string).IsAssignableFrom(type))
+            {
+                inner = type;
+                return true;
+            }
+
             if (type != null && type.IsNullableType())
             {
                 inner = type.GetGenericArguments().Single();
@@ -112,12 +114,17 @@ namespace Essentials.Reflection
             this Type? type)
         {
             return type != null
-                && (type.Is<short>()
-                || type.Is<int>()
-                || type.Is<long>()
-                || type.Is<float>()
-                || type.Is<double>()
-                || type.Is<decimal>());
+                && (type == typeof(byte)
+                || type == typeof(sbyte)
+                || type == typeof(short)
+                || type == typeof(ushort)
+                || type == typeof(int)
+                || type == typeof(uint)
+                || type == typeof(long)
+                || type == typeof(ulong)
+                || type == typeof(float)
+                || type == typeof(double)
+                || type == typeof(decimal));
         }
 
         public static bool IsCollection(
@@ -129,6 +136,20 @@ namespace Essentials.Reflection
             if (type == null) return false;
             Type enumerableType = ExtractGenericInterface(type, typeof(IEnumerable<>));
             return enumerableType != null;
+        }
+
+        public static bool IsGenericEnumerable(this Type type)
+        {
+            return new[] { type }.Concat(type.GetInterfaces())
+                .Any(i => i.IsAssignableFromGenericEnumerable());
+        }
+
+        public static bool IsAssignableFromGenericEnumerable(this Type type)
+        {
+            if (type?.GenericTypeArguments.Length == 1)
+                return typeof(IEnumerable<>).IsAssignableFrom(type.GetGenericTypeDefinition());
+            else
+                return false;
         }
 
         public static bool IsAnyDictionary(
@@ -159,6 +180,9 @@ namespace Essentials.Reflection
 #endif
             this Type? type)
         {
+            if (typeof(string).IsAssignableFrom(type))
+                return true;
+
             if (type.IsNullableType(out Type? innerType) && innerType != null && innerType.IsSimple())
                 return true;
 
@@ -166,6 +190,11 @@ namespace Essentials.Reflection
                 && (type.IsPrimitive
                 || type.IsValueType
                 || type.Is<string>());
+        }
+
+        public static bool ValueIsRequired(this PropertyInfo property)
+        {
+            return property.IsRequired().GetCustomAttribute<RequiredAttribute>() != null;
         }
 
         private static Type ExtractGenericInterface(Type queryType, Type interfaceType)
@@ -342,7 +371,7 @@ namespace Essentials.Reflection
             return $"{type.FullName}, {type.GetTypeInfo().Assembly.GetName().Name}";
         }
 
-        public static string GetFullName(this MethodBase method)
+        public static string GetDisplayName(this MethodBase method)
         {
             method.IsRequired();
 
@@ -350,10 +379,24 @@ namespace Essentials.Reflection
             return $"{method.DeclaringType?.FullName}.{method.Name}({string.Join(", ", parameters)})";
         }
 
+        public static string GetPropertyTypeDisplayName(this PropertyInfo property)
+        {
+            property.IsRequired();
+
+            var dataTypeAttribute = property.GetCustomAttribute<DataTypeAttribute>();
+            if (dataTypeAttribute != null)
+                return dataTypeAttribute.GetDataTypeName();
+
+            return property.PropertyType.GetDisplayName();
+        }
+
         public static string GetDisplayName(this Type? type, bool includeNamespaces = true)
         {
             if (type == null)
                 return string.Empty;
+
+            if (type.IsNullableType(out Type? inner) && inner != null)
+                type = inner;
 
             string typeName = includeNamespaces ? type.FullName.SubstringBefore("`") : type.Name.SubstringBefore("`");
 
