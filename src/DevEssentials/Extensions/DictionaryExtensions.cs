@@ -120,7 +120,7 @@ namespace Essentials
 #if NETSTANDARD2_1_OR_GREATER
         [return: MaybeNull]
 #endif
-        public static T? Get<T>(this IDictionary<string, object> dictionary)
+        public static T? Get<T>(this IDictionary<string, object?> dictionary)
         {
             dictionary.IsRequired();
             string key = Contract.Requires(typeof(T).FullName, $"{typeof(T)} FullName");
@@ -131,7 +131,7 @@ namespace Essentials
 #if NETSTANDARD2_1_OR_GREATER
         [return: MaybeNull]
 #endif
-        public static T? Get<T>(this IDictionary<object, object> dictionary)
+        public static T? Get<T>(this IDictionary<object, object?> dictionary)
         {
             dictionary.IsRequired();
             string key = Contract.Requires(typeof(T).FullName, $"{typeof(T)} FullName");
@@ -161,7 +161,7 @@ namespace Essentials
         /// <summary>
         /// sets an item in the dictionary with the key of typeof(T).FullName
         /// </summary>
-        public static void Set(this IDictionary<string, object> dictionary, object item)
+        public static void Set(this IDictionary<string, object?> dictionary, object item)
         {
             dictionary.IsRequired();
 
