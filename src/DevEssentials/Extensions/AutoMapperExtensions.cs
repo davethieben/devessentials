@@ -18,13 +18,13 @@ namespace AutoMapper
         {
             private readonly IMapper _mapper;
             private readonly TSource _source;
-            private readonly IDictionary<string, object> _items;
+            private readonly IDictionary<string, object?> _items;
 
             public MapExpression(IMapper mapper, TSource source)
             {
                 _mapper = mapper.IsRequired();
                 _source = source;
-                _items = new Dictionary<string, object>();
+                _items = new Dictionary<string, object?>();
             }
 
             public MapExpression<TSource> With(params object[] arguments)
@@ -33,9 +33,9 @@ namespace AutoMapper
                 {
                     if (argument != null)
                     {
-                        if (argument is KeyValuePair<string, object>)
+                        if (argument is KeyValuePair<string, object?>)
                         {
-                            _items.Add((KeyValuePair<string, object>)argument);
+                            _items.Add((KeyValuePair<string, object?>)argument);
                         }
                         else
                         {
